@@ -5,7 +5,7 @@
  *
  * ====================================================================
  *
- * Copyright 1999-2002 The Apache Software Foundation 
+ * Copyright 1999-2002 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,9 +330,15 @@ public abstract class XMLResponseMethodBase
                     || this instanceof ReportMethod)
                     && status == HttpStatus.SC_OK) {
 
-                Element multistatus =
-                    getResponseDocument().getDocumentElement();
-                NodeList list = multistatus.getChildNodes();
+
+                Document rdoc = getResponseDocument();
+
+                NodeList list = null;
+                if (rdoc != null) {
+                    Element multistatus = rdoc.getDocumentElement();
+                    list = multistatus.getChildNodes();
+                }
+
                 if (list != null) {
                     for (int i = 0; i < list.getLength(); i++) {
                         try {
