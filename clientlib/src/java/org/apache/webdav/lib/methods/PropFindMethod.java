@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropFindMethod.java,v 1.1.2.2 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropFindMethod.java,v 1.7 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.7 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -29,8 +29,8 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.XMLPrinter;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 /**
  * This class implements the WebDAV PROPFIND Method.
@@ -61,9 +61,6 @@ import org.apache.webdav.lib.PropertyName;
  * &lt;/D:propfind&gt;
  * </PRE>
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
- * @author Dirk Verbeeck
  */
 public class PropFindMethod extends XMLResponseMethodBase
     implements DepthSupport {
@@ -193,7 +190,7 @@ public class PropFindMethod extends XMLResponseMethodBase
             if (headerValue.equals("0")){
                 depth = DEPTH_0;
             }
-            if (headerValue.equals("1")){
+            else if (headerValue.equals("1")){
                 depth = DEPTH_1;
             }
             else if (headerValue.equalsIgnoreCase("infinity")){
@@ -353,9 +350,12 @@ public class PropFindMethod extends XMLResponseMethodBase
     protected String generateRequestBody() {
 
         XMLPrinter printer = new XMLPrinter();
+
         printer.writeXMLHeader();
         printer.writeElement("D", "DAV:", "propfind",
                              XMLPrinter.OPENING);
+                             
+                             
 
         switch (type) {
         case ALL:

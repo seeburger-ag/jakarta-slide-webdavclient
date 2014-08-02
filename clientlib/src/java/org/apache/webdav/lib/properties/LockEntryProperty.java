@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/LockEntryProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/LockEntryProperty.java,v 1.3 2004/07/28 09:30:35 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:30:35 $
  *
  * ====================================================================
  *
@@ -25,8 +25,7 @@ package org.apache.webdav.lib.properties;
 import org.apache.webdav.lib.Property;
 
 /**
- * @author BC Holmes
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.3 $
  */
 public interface LockEntryProperty extends Property {
 

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Lock.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Lock.java,v 1.3.2.1 2004/10/11 08:17:19 luetzkendorf Exp $
+ * $Revision: 1.3.2.1 $
+ * $Date: 2004/10/11 08:17:19 $
  *
  * ====================================================================
  *
@@ -28,10 +28,7 @@ import org.apache.webdav.lib.methods.DepthSupport;
 /**
  * This class represents a lock on a resource.
  *
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
- * @author Remy Maucherat
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.3.2.1 $
  */
 public class Lock {
 
@@ -49,6 +46,11 @@ public class Lock {
      * The write constant in the locktype.
      */
     public static final int TYPE_WRITE = 0;
+    
+    /**
+     * Type indicating lock is a transaction lock.
+     */
+    public static final int TYPE_TRANSACTION = 1;
 
 
     /**
@@ -88,6 +90,16 @@ public class Lock {
         this.lockToken = lockToken;
     }
 
+    public Lock(int lockScope, int lockType, int depth, String owner,
+            int timeout, String lockToken, String principalUrl) {
+	    this.lockScope = lockScope;
+	    this.lockType = lockType;
+	    this.depth = depth;
+	    this.owner = owner;
+	    this.timeout = timeout;
+	    this.lockToken = lockToken;
+	    this.principalUrl = principalUrl;
+	}
 
     /**
      * Default constructor for the activelock.
@@ -118,6 +130,8 @@ public class Lock {
 
 
     protected String lockToken = null;
+    
+    protected String principalUrl = null;
 
 
     // --------------------------------------------------------- Public Methods
@@ -160,6 +174,14 @@ public class Lock {
      */
     public String getOwner() {
         return owner;
+    }
+    
+    /**
+     * Get the <code>principal-URL</code> property of the lock, if one.
+     * @return an URL as String
+     */
+    public String getPrincipalUrl() {
+        return principalUrl;
     }
 
 

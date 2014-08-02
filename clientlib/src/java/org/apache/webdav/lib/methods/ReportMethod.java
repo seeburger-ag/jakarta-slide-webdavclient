@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/ReportMethod.java,v 1.1.2.2 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/ReportMethod.java,v 1.6 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -29,8 +29,8 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.XMLPrinter;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 /**
  * This class implements the WebDAV REPORT Method.
@@ -43,7 +43,6 @@ import org.apache.webdav.lib.PropertyName;
  *
  * <P>     A typical request looks like this:
  *
- * @author Mathias Luber
  */
 public class ReportMethod extends XMLResponseMethodBase
     implements DepthSupport {
@@ -355,6 +354,8 @@ public class ReportMethod extends XMLResponseMethodBase
             return preloadedQuery;
 
         XMLPrinter printer = new XMLPrinter();
+
+
         printer.writeXMLHeader();
         if (type!= LOCATE_HISTORY)
             printer.writeElement("D", "DAV:", "version-tree",

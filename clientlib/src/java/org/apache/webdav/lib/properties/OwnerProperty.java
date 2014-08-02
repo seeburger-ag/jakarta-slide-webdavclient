@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/OwnerProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/OwnerProperty.java,v 1.4.2.1 2004/09/26 14:19:20 luetzkendorf Exp $
+ * $Revision: 1.4.2.1 $
+ * $Date: 2004/09/26 14:19:20 $
  *
  * ====================================================================
  *
@@ -23,32 +23,23 @@
 
 package org.apache.webdav.lib.properties;
 
-import org.apache.util.DOMUtils;
-import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.ResponseEntity;
 import org.w3c.dom.Element;
 
 /**
  * This interface models the <code>&lt;D:owner&gt;</code> property, which is
  * defined in the WebDAV Access Control Protocol specification.
- *
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
  */
-public class OwnerProperty extends BaseProperty {
-
+public class OwnerProperty extends HrefValuedProperty {
 
     // -------------------------------------------------------------- Constants
-
 
     /**
      * The property name.
      */
     public static final String TAG_NAME = "owner";
 
-
     // ----------------------------------------------------------- Constructors
-
 
     /**
      * Default constructor for the property.
@@ -56,29 +47,4 @@ public class OwnerProperty extends BaseProperty {
     public OwnerProperty(ResponseEntity response, Element element) {
         super(response, element);
     }
-
-
-    // --------------------------------------------------------- Public Methods
-
-    /**
-     * Returns the value of the href element.
-     */
-    public String getHref() {
-        String principal="";
-        Element href = DOMUtils.getFirstElement(element, "DAV:", "href");
-        if (href!=null)
-        {
-            principal = DOMUtils.getTextValue(href);
-        }
-        return principal;
-    }
-
-    public String getPropertyAsString() {
-        return getHref();
-    }
-
-    public String toString() {
-        return getHref();
-    }
-
 }

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropertyBodyHelper.java,v 1.1.2.1 2004/02/05 17:20:44 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 17:20:44 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropertyBodyHelper.java,v 1.4 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -26,15 +26,14 @@ package org.apache.webdav.lib.methods;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
-import org.apache.util.XMLPrinter;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 /**
  * This class manages an array of PropertyNames.
  * It is used to generate a <prop> tag section
  * in the body of a WebDAV method.
  *
- * @author Martin Dulisch, 07.02.2003
  */
 public class PropertyBodyHelper {
 

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/PropertyName.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/PropertyName.java,v 1.4 2004/08/02 15:45:49 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:49 $
  *
  * ====================================================================
  *
@@ -23,13 +23,12 @@
 
 package org.apache.webdav.lib;
 
-import org.apache.util.QName;
+import org.apache.webdav.lib.util.QName;
 
 /**
  * This class models a DAV property name.
  *
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.4 $
  */
 public class PropertyName extends QName
 {

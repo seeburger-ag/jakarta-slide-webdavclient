@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/MoveMethod.java,v 1.1.2.1 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/MoveMethod.java,v 1.6 2004/07/28 09:30:40 ib Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/07/28 09:30:40 $
  *
  * ====================================================================
  *
@@ -27,12 +27,12 @@ import java.io.IOException;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.protocol.Protocol;
 
 
 /**
  * MOVE Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
  */
 public class MoveMethod
     extends XMLResponseMethodBase {
@@ -185,14 +185,57 @@ public class MoveMethod
 
         super.addRequestHeaders(state, conn);
 
-        String absoluteDestination =
-            conn.getProtocol().getScheme() + "://" + conn.getHost() + ":"
-            + conn.getPort() + destination;
+        String absoluteDestination = getAbsoluteDestination(conn, destination);
         super.setRequestHeader("Destination", absoluteDestination);
 
         if (!isOverwrite())
             super.setRequestHeader("Overwrite", "F");
 
+    }
+
+    /**
+     * A client of the {@link MoveMethod} can specify a destination as either an
+     * absolute URL (possibly to a different server), or as a absolute path on
+     * the same server, but this function makes sure that the path sent to the
+     * server is always an absolute URL.
+     *
+     * <p>Note that this function will add server and port to the request -
+     * however, port is not added if it is the default port for the scheme
+     * in question. </p>
+     *
+     * <p>This function is static so that it can be reused by the {@link CopyMethod}.
+     * </p>
+     *
+     * @param conn  The connection for the current request, in case the caller
+     *  specifies an absolute path.
+     *
+     * @param absolutePathOrURL If an absolute URL, nothing done, but if an absolute
+     *  path, it is converted into an absolute URL.
+     *
+     * @return An absolute URL
+     */
+    static String getAbsoluteDestination(HttpConnection conn, String absolutePathOrURL) {
+
+        String absoluteDestination = absolutePathOrURL;
+
+        // is this an absolute path?
+        if (absolutePathOrURL.startsWith("/")) {
+
+            // yes - get the protocol to start the URL with the appropriate scheme.
+            Protocol protocol = conn.getProtocol();
+            StringBuffer bufDest = new StringBuffer(protocol.getScheme());
+            bufDest.append("://").append(conn.getHost());
+
+            // only add in the port if it is not the default port.
+            if (conn.getPort() != protocol.getDefaultPort()) {
+                bufDest.append(':').append(conn.getPort());
+            }
+
+            // append the path.
+            bufDest.append(absolutePathOrURL);
+            absoluteDestination = bufDest.toString();
+        }
+        return absoluteDestination;
     }
 
 

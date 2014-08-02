@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavSession.java,v 1.2.2.2 2004/02/25 16:33:21 ib Exp $
- * $Revision: 1.2.2.2 $
- * $Date: 2004/02/25 16:33:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavSession.java,v 1.7 2004/07/30 13:20:48 ib Exp $
+ * $Revision: 1.7 $
+ * $Date: 2004/07/30 13:20:48 $
  *
  * ====================================================================
  *
@@ -48,7 +48,6 @@ import org.apache.commons.httpclient.HttpURL;
  * active users. These guidelines are intended to improve HTTP response
  * times and avoid congestion.
  *
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
  */
 public abstract class WebdavSession {
 
@@ -209,7 +208,11 @@ public abstract class WebdavSession {
      */
     public void closeSession()
         throws IOException {
-        this.client = null;
+        if (client != null) {
+            client.getHttpConnectionManager().getConnection(
+                client.getHostConfiguration()).close();
+            client = null;
+        }
     }
 
 

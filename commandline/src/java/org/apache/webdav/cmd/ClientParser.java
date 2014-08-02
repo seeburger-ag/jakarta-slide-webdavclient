@@ -1,9 +1,9 @@
 // $ANTLR 2.7.3: "Client.g" -> "ClientParser.java"$
 
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/ClientParser.java,v 1.1.2.3 2004/04/01 08:38:02 ozeigermann Exp $
- * $Revision: 1.1.2.3 $
- * $Date: 2004/04/01 08:38:02 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/ClientParser.java,v 1.9 2004/08/02 15:45:50 unico Exp $
+ * $Revision: 1.9 $
+ * $Date: 2004/08/02 15:45:50 $
  *
  * ====================================================================
  *
@@ -27,8 +27,8 @@ package org.apache.webdav.cmd;
 
 import java.io.*;
 import java.util.*;
-import org.apache.util.QName;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.QName;
 
 
 import antlr.TokenBuffer;
@@ -48,8 +48,7 @@ import antlr.collections.impl.BitSet;
 /**
  * The Slide WebDAV client parser.
  *
- * @version     $Revision: 1.1.2.3 $ $Date: 2004/04/01 08:38:02 $
- * @author      Dirk Verbeeck 
+ * @version     $Revision: 1.9 $ $Date: 2004/08/02 15:45:50 $
  */
 public class ClientParser extends antlr.LLkParser       implements SlideTokenTypes
  {
@@ -438,6 +437,21 @@ public ClientParser(ParserSharedInputState state) {
 			update();
 			break;
 		}
+		case BEGIN:
+		{
+			begin();
+			break;
+		}
+		case COMMIT:
+		{
+			commit();
+			break;
+		}
+		case ABORT:
+		{
+			abort();
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -519,13 +533,13 @@ public ClientParser(ParserSharedInputState state) {
 		cmd = LT(1);
 		match(STRING);
 		{
-		_loop92:
+		_loop101:
 		do {
 			if ((LA(1)==STRING)) {
 				match(STRING);
 			}
 			else {
-				break _loop92;
+				break _loop101;
 			}
 			
 		} while (true);
@@ -1411,6 +1425,9 @@ public ClientParser(ParserSharedInputState state) {
 	public final void lock() throws RecognitionException, TokenStreamException {
 		
 		Token  path = null;
+		Token  os1 = null;
+		Token  os2 = null;
+		Token  os3 = null;
 		
 		try {      // for error handling
 			match(LOCK);
@@ -1423,6 +1440,7 @@ public ClientParser(ParserSharedInputState state) {
 				break;
 			}
 			case EOL:
+			case OPTIONSTRING:
 			{
 				break;
 			}
@@ -1432,30 +1450,48 @@ public ClientParser(ParserSharedInputState state) {
 			}
 			}
 			}
-			match(EOL);
-			
-			client.lock(text(path));
-			
-		}
-		catch (RecognitionException ex) {
-			
-			printUsage("lock");
-			
-		}
-	}
-	
-	public final void unlock() throws RecognitionException, TokenStreamException {
-		
-		Token  path = null;
-		
-		try {      // for error handling
-			match(UNLOCK);
 			{
 			switch ( LA(1)) {
-			case STRING:
+			case OPTIONSTRING:
 			{
-				path = LT(1);
-				match(STRING);
+				os1 = LT(1);
+				match(OPTIONSTRING);
+				{
+				switch ( LA(1)) {
+				case OPTIONSTRING:
+				{
+					os2 = LT(1);
+					match(OPTIONSTRING);
+					{
+					switch ( LA(1)) {
+					case OPTIONSTRING:
+					{
+						os3 = LT(1);
+						match(OPTIONSTRING);
+						break;
+					}
+					case EOL:
+					{
+						break;
+					}
+					default:
+					{
+						throw new NoViableAltException(LT(1), getFilename());
+					}
+					}
+					}
+					break;
+				}
+				case EOL:
+				{
+					break;
+				}
+				default:
+				{
+					throw new NoViableAltException(LT(1), getFilename());
+				}
+				}
+				}
 				break;
 			}
 			case EOL:
@@ -1470,7 +1506,99 @@ public ClientParser(ParserSharedInputState state) {
 			}
 			match(EOL);
 			
-			client.unlock(text(path));
+			
+				        String[] opt = {text(os1), text(os2), text(os3), null};
+				        
+				        int parNr[]  = {3, 3, 3};
+				        String err = null;
+				            
+				        for (int i = 0 ; i< opt.length ;i++) {
+				            
+				            if (opt[i] != null) {
+			
+				                if ( opt[i].toLowerCase().startsWith("-t")) {
+				                    parNr[0] = i;
+				                } else
+			
+				                if ( opt[i].toLowerCase().startsWith("-s")) {
+				                    parNr[1] = i;
+				                } else
+				                
+				                if ( opt[i].toLowerCase().startsWith("-o")) {
+				                    parNr[2] = i;
+				                } else {
+				                    err = "Wrong parameter: "+ opt[i];
+				                }
+				            }
+				        }
+			
+					if (err == null)
+				client.lock(text(path), opt[parNr[0]], opt[parNr[1]], opt[parNr[2]]);
+			else
+				client.print(err); 	
+			
+		}
+		catch (RecognitionException ex) {
+			
+			printUsage("lock");
+			
+		}
+	}
+	
+	public final void unlock() throws RecognitionException, TokenStreamException {
+		
+		Token  path = null;
+		Token  os = null;
+		
+		try {      // for error handling
+			match(UNLOCK);
+			{
+			switch ( LA(1)) {
+			case STRING:
+			{
+				path = LT(1);
+				match(STRING);
+				break;
+			}
+			case EOL:
+			case OPTIONSTRING:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			{
+			switch ( LA(1)) {
+			case OPTIONSTRING:
+			{
+				os = LT(1);
+				match(OPTIONSTRING);
+				break;
+			}
+			case EOL:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			match(EOL);
+			
+			String owner = text(os);
+			String err = null;
+				
+			
+				        if ((owner != null) && (!owner.toLowerCase().startsWith("-o")) ) {
+			err = "Wrong parameter: "+ owner;
+			}
+			client.unlock(text(path), owner);
 			
 		}
 		catch (RecognitionException ex) {
@@ -1931,8 +2059,8 @@ public ClientParser(ParserSharedInputState state) {
 			Vector properties = new Vector();
 			
 			{
-			int _cnt84=0;
-			_loop84:
+			int _cnt93=0;
+			_loop93:
 			do {
 				switch ( LA(1)) {
 				case STRING:
@@ -1955,10 +2083,10 @@ public ClientParser(ParserSharedInputState state) {
 				}
 				default:
 				{
-					if ( _cnt84>=1 ) { break _loop84; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt93>=1 ) { break _loop93; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				}
-				_cnt84++;
+				_cnt93++;
 			} while (true);
 			}
 			match(ON);
@@ -1966,8 +2094,8 @@ public ClientParser(ParserSharedInputState state) {
 			Vector historyUris = new Vector();
 			
 			{
-			int _cnt86=0;
-			_loop86:
+			int _cnt95=0;
+			_loop95:
 			do {
 				if ((LA(1)==STRING)) {
 					uri = LT(1);
@@ -1977,10 +2105,10 @@ public ClientParser(ParserSharedInputState state) {
 					
 				}
 				else {
-					if ( _cnt86>=1 ) { break _loop86; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt95>=1 ) { break _loop95; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				
-				_cnt86++;
+				_cnt95++;
 			} while (true);
 			}
 			match(EOL);
@@ -2098,11 +2226,98 @@ public ClientParser(ParserSharedInputState state) {
 		}
 	}
 	
+	public final void begin() throws RecognitionException, TokenStreamException {
+		
+		Token  timeout = null;
+		Token  owner = null;
+		
+		try {      // for error handling
+			match(BEGIN);
+			{
+			switch ( LA(1)) {
+			case STRING:
+			{
+				timeout = LT(1);
+				match(STRING);
+				{
+				switch ( LA(1)) {
+				case STRING:
+				{
+					owner = LT(1);
+					match(STRING);
+					break;
+				}
+				case EOL:
+				{
+					break;
+				}
+				default:
+				{
+					throw new NoViableAltException(LT(1), getFilename());
+				}
+				}
+				}
+				break;
+			}
+			case EOL:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			match(EOL);
+			
+			client.beginTransaction(text(timeout), text(owner));
+			
+		}
+		catch (RecognitionException ex) {
+			
+			printUsage("begin");
+			
+		}
+	}
+	
+	public final void commit() throws RecognitionException, TokenStreamException {
+		
+		
+		try {      // for error handling
+			match(COMMIT);
+			
+			client.commitTransaction();
+			
+		}
+		catch (RecognitionException ex) {
+			
+			printUsage("commit");
+			
+		}
+	}
+	
+	public final void abort() throws RecognitionException, TokenStreamException {
+		
+		
+		try {      // for error handling
+			match(ABORT);
+			
+			client.abortTransaction();
+			
+		}
+		catch (RecognitionException ex) {
+			
+			printUsage("abort");
+			
+		}
+	}
+	
 	public final void skip() throws RecognitionException, TokenStreamException {
 		
 		
 		{
-		_loop96:
+		_loop105:
 		do {
 			switch ( LA(1)) {
 			case STRING:
@@ -2147,6 +2362,9 @@ public ClientParser(ParserSharedInputState state) {
 			case PROPPATCH:
 			case GET:
 			case PUT:
+			case BEGIN:
+			case COMMIT:
+			case ABORT:
 			case LOCK:
 			case UNLOCK:
 			case LOCKS:
@@ -2181,7 +2399,7 @@ public ClientParser(ParserSharedInputState state) {
 			}
 			default:
 			{
-				break _loop96;
+				break _loop105;
 			}
 			}
 		} while (true);
@@ -2519,6 +2737,21 @@ public ClientParser(ParserSharedInputState state) {
 			match(UPDATE);
 			break;
 		}
+		case BEGIN:
+		{
+			match(BEGIN);
+			break;
+		}
+		case COMMIT:
+		{
+			match(COMMIT);
+			break;
+		}
+		case ABORT:
+		{
+			match(ABORT);
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -2574,6 +2807,9 @@ public ClientParser(ParserSharedInputState state) {
 		"PROPSET",
 		"\"get\"",
 		"\"put\"",
+		"\"begin\"",
+		"\"commit\"",
+		"\"abort\"",
 		"\"lock\"",
 		"\"unlock\"",
 		"\"locks\"",
@@ -2612,7 +2848,7 @@ public ClientParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -10133649051624464L, 15L, 0L, 0L};
+		long[] data = { -81065343182709776L, 127L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());

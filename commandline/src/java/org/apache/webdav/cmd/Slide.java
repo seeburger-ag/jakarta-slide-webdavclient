@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Slide.java,v 1.1.2.2 2004/04/01 09:31:28 ozeigermann Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/04/01 09:31:28 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Slide.java,v 1.5 2004/07/28 09:30:33 ib Exp $
+ * $Revision: 1.5 $
+ * $Date: 2004/07/28 09:30:33 $
  *
  * ====================================================================
  *
@@ -23,13 +23,14 @@
 
 package org.apache.webdav.cmd;
 
+
+import org.apache.commons.httpclient.contrib.ssl.*;
+import org.apache.commons.httpclient.protocol.Protocol;
+
+
 /**
  * The Slide client, the command line version for WebDAV client.
  *
- * @author <a href="mailto:jericho@thinkree.com">Park, Sung-Gu</a>
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:daveb@miceda-data.com">Dave Bryson</a>
- * @author Dirk Verbeeck
  */
 public class Slide {
 
@@ -40,6 +41,8 @@ public class Slide {
 
     public static void main(String[] args) {
         Client client = new Client(System.in,System.out);
+        
+        String remoteHost = null;
 
         ////////////  BEGIN Command line arguments //////////////
         String argOptions = null;
@@ -52,8 +55,7 @@ public class Slide {
                 else
                     argOptions = args[i];
             } else {
-//                slide.stringUrl = args[i];
-                client.connect(args[i]);
+                remoteHost = args[i];
             }
         }
 
@@ -74,12 +76,22 @@ public class Slide {
                     case 'd':
                         client.setDebug(Client.DEBUG_ON);
                         break;
+                    case 's':
+                        Protocol.registerProtocol("https", 
+                                                  new Protocol("https",
+                                                               new EasySSLProtocolSocketFactory(), 
+                                                               443));
+                        break;
                     default:
                         System.exit(-1);
                 }
             }
         }
         ////////////  END Command line arguments //////////////
+
+        if (remoteHost != null) {
+            client.connect(remoteHost);
+        }
 
         client.run();
     }
@@ -90,7 +102,7 @@ public class Slide {
     private static void printCmdLineUsage()
     {
 
-        System.out.println("Usage: Slide [-vdh] " +
+        System.out.println("Usage: Slide [-vdhs] " +
             "http://hostname[:port][/path]");
         System.out.println
             ("  Default protocol: http, port: 80, path: /");
@@ -98,6 +110,7 @@ public class Slide {
         System.out.println("  -v: Print version information.");
         System.out.println("  -d: Debug.");
         System.out.println("  -h: Print this help message.");
+        System.out.println("  -s: use EasySSLProtocol");
         System.out.println(
             "Please, email bug reports to slide-user@jakarta.apache.org");
     }

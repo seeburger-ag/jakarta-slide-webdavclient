@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Client.java,v 1.2.2.8 2004/04/28 08:59:36 ozeigermann Exp $
- * $Revision: 1.2.2.8 $
- * $Date: 2004/04/28 08:59:36 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Client.java,v 1.21.2.2 2004/10/02 17:39:11 luetzkendorf Exp $
+ * $Revision: 1.21.2.2 $
+ * $Date: 2004/10/02 17:39:11 $
  *
  * ====================================================================
  *
@@ -37,6 +37,7 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
@@ -44,7 +45,6 @@ import org.apache.commons.httpclient.HttpURL;
 import org.apache.commons.httpclient.HttpsURL;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.util.QName;
 import org.apache.webdav.lib.Ace;
 import org.apache.webdav.lib.Lock;
 import org.apache.webdav.lib.Privilege;
@@ -53,18 +53,17 @@ import org.apache.webdav.lib.PropertyName;
 import org.apache.webdav.lib.ResponseEntity;
 import org.apache.webdav.lib.WebdavResource;
 import org.apache.webdav.lib.methods.DepthSupport;
+import org.apache.webdav.lib.methods.LockMethod;
 import org.apache.webdav.lib.properties.AclProperty;
 import org.apache.webdav.lib.properties.LockDiscoveryProperty;
 import org.apache.webdav.lib.properties.PrincipalCollectionSetProperty;
+import org.apache.webdav.lib.properties.ResourceTypeProperty;
+import org.apache.webdav.lib.util.QName;
 
 
 /**
  * The Slide client, the command line version for WebDAV client.
  *
- * @author <a href="mailto:jericho@thinkree.com">Park, Sung-Gu</a>
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:daveb@miceda-data.com">Dave Bryson</a>
- * @author Dirk Verbeeck
  */
 final class Client {
 
@@ -84,7 +83,7 @@ final class Client {
     private HttpURL httpURL;
 
     /** The debug level. */
-    private int debugLevel = 0;
+    private int debugLevel = DEBUG_OFF;
 
     /** The WebDAV resource. */
     private WebdavResource webdavResource = null;
@@ -258,6 +257,12 @@ final class Client {
 
     void connect(String uri)
     {
+                
+        if (!uri.endsWith("/") && !uri.endsWith("\\")) {
+            // append / to the path
+             uri+="/";
+        }
+
         out.println("connect " + uri);
 
         try {
@@ -266,6 +271,14 @@ final class Client {
             if (webdavResource == null) {
                 webdavResource = new WebdavResource(httpURL);
                 webdavResource.setDebug(debugLevel);
+                
+                // is not a collection?
+                if (!((ResourceTypeProperty)webdavResource.getResourceType()).isCollection()) {
+                    webdavResource = null;
+                    httpURL = null;
+                    out.println("Error: " + uri + " is not a collection! Use open/connect only for collections!");
+                }
+                
             } else {
                 webdavResource.close();
                 webdavResource.setHttpURL(httpURL);
@@ -273,6 +286,7 @@ final class Client {
             setPath(webdavResource.getPath());
         }
         catch (HttpException we) {
+            out.print("HttpException.getReasonCode(): "+ we.getReasonCode());
             if (we.getReasonCode() == HttpStatus.SC_UNAUTHORIZED) {
                 try {
                     out.print("UserName: ");
@@ -302,6 +316,13 @@ final class Client {
                     webdavResource = new WebdavResource(httpURL);
                     webdavResource.setDebug(debugLevel);
                     setPath(webdavResource.getPath());
+
+
+                    if (!((ResourceTypeProperty)webdavResource.getResourceType()).isCollection()) {
+                        webdavResource = null;
+                        httpURL = null;
+                        out.println("Error: " + uri + " is not a collection! Use open/connect only for collections!");
+                    }
                 }
                 catch (Exception ex) {
                     handleException(ex);
@@ -468,27 +489,40 @@ final class Client {
             out.println("Warning: Not found the path");
         }
     }
+    
+    private File getFileByPath(String path) {
+        
+        if (path != null) {
+             // set a new file if '\' or '/' at the begin of path 
+             // or ':' at the 2nd position of path exists.
+             // if not: take the old parent entry of file and add a '/' to path.
+             return(path.startsWith("/") ||
+                    path.startsWith("\\") || 
+                  ((path.length() > 1) && (path.charAt(1) == ':'))  ) ?
+                    new File(path) :
+                    new File(dir, "/"+path);
+         } else {
+             return dir;    
+         }    
+  
+    }
+
 
     void lcd(String path)
     {
-        try
-        {
-            out.println("lcd " + path);
-            File anotherDir = (path.startsWith("/") ||
-                path.startsWith("\\")) ? new File(path) :
-                new File(dir.getCanonicalPath(), path);
+        File anotherDir = getFileByPath(path); 
+                   
+        if (anotherDir.isDirectory()) {
+            dir = anotherDir;
+        } else {
+            out.println("Warning: path not found!");
+        }
+        
+        updatePrompt(getPath());
 
-            if (anotherDir.isDirectory()) {
-                dir = anotherDir;
-            } else {
-                out.println("Warning: Not found the path");
-            }
-        }
-        catch (IOException ex)
-        {
-            out.println("Warning: Not found the path");
-        }
     }
+    
+   
 
     void lls(String options, String path)
     {
@@ -496,11 +530,13 @@ final class Client {
         char option = 'F';
         if ((options!=null) && (options.indexOf('l') > 0))
             option = 'l';
+    
+        File temp = getFileByPath(path); 
+        
 
-        File temp =  (path != null) ? new File(dir, path) : dir;
-        if (!temp.exists()) {
-            out.println("Warning: Not found the path");
-            return;
+       if (!temp.exists() || !temp.isDirectory()) {
+           out.println("Warning: path not found!");
+           return;
         }
 
         String[] list = temp.list();
@@ -575,22 +611,34 @@ final class Client {
 
     void cd(String path)
     {
+    	String currentPath = webdavResource.getPath();
+    	
         try {
             String cdPath = checkUri(path + "/");
             webdavResource.setPath(cdPath);
+            
             if (webdavResource.exists()) {
                 if (webdavResource.isCollection()) {
                     setPath(webdavResource.getPath());
                 } else {
                     out.println("Warning: Not a collection");
+                    webdavResource.setPath(currentPath);
                 }
             } else {
                 out.println("Warning: Not found the path");
+                webdavResource.setPath(currentPath);
             }
         }
         catch (Exception ex) {
             handleException(ex);
+            try {
+                webdavResource.setPath(currentPath);    
+            } catch (Exception e) {
+                handleException(e);
+            }
+
         }
+
         updatePrompt(getPath());
     }
 
@@ -611,58 +659,69 @@ final class Client {
                 webdavResource.setPath(path);
             }
             switch (option) {
+                
             case 'l':
+
                 Vector basiclist = webdavResource.listBasic();
                 for (int i = 0; i < basiclist.size(); i++) {
                     String[] longFormat =
                         (String []) basiclist.elementAt(i);
-                    for (int j = 0;
-                        j < longFormat.length; j++) {
-                        String s = longFormat[j];
+                        
+                        // name -> position 4
+                        String s = longFormat[4];
                         int len = s.length();
-                        switch (j)  {
-                            case 0:
-                                out.print(s);
-                                for (int k = len; k < 20; k++)
-                                    out.print(" ");
-                                break;
-                            case 1:
-                                for (int k = 10 - len;
-                                    k > 0 ; k--)
-                                    out.print(" ");
-                                // don't cut the size.
-                                out.print(s + " ");
-                                break;
-                            case 2:
-                                // cut the description.
-                                out.print(" " +
-                                    ((len > 20) ?
-                                    s.substring(0, 20) : s));
-                                for (int k = len; k < 20; k++)
-                                    out.print(" ");
-                                break;
-                            case 3:
-                            default:
-                                out.print(" " + s);
-                        }
+                        out.print(s);
+                        for (int k = len; k < 20; k++)
+                            out.print(" ");
+                        
+
+                        // size -> position 1            
+                        s = longFormat[1];
+                        len = s.length();
+                        for (int k = 10 - len;
+                            k > 0 ; k--)
+                            out.print(" ");
+                        // don't cut the size.
+                        out.print(s + " ");
+                                
+                                
+                        // description   -> position 2                                
+                        // cut the description.
+                        s = longFormat[2];
+                        len = s.length();
+
+                        out.print(" " +
+                            ((len > 20) ?
+                            s.substring(0, 20) : s));
+                        for (int k = len; k < 20; k++)
+                            out.print(" ");
+                            
+                        // date -> position 3                            
+                        s = longFormat[3];
+                        len = s.length();
+                        out.println(" " + s);
                     }
-                    // Start with a new line.
-                    out.println();
-                }
+                    
+                    
+                
                 break;
+                
+                
             case 'F':
                 String[] list = webdavResource.list();
-                int i = 0;
-                for (; i < list.length; i++) {
-                    out.print(list[i] + " ");
-                    for (int j = list[i].length(); j < 25; j++) {
-                        out.print(" ");
+                if (list != null) {
+                    int i = 0;
+                    for (; i < list.length; i++) {
+                        out.print(list[i] + " ");
+                        for (int j = list[i].length(); j < 25; j++) {
+                            out.print(" ");
+                        }
+                        if (i % 3 == 2)
+                           out.println();
                     }
-                    if (i % 3 == 2)
-                       out.println();
+                    if (list.length > 0 && i % 3 != 0)
+                        out.println();
                 }
-                if (list.length > 0 && i % 3 != 0)
-                    out.println();
                 break;
             default:
             } // end of switch
@@ -730,6 +789,7 @@ final class Client {
     {
         String name=prop;
         try {
+            path=checkUri(path);
             out.print("Putting property(" + name + ", " + value +
                 ") to '" + path + "': ");
             if (webdavResource.proppatchMethod(
@@ -744,9 +804,40 @@ final class Client {
             handleException(ex);
         }
     }
+    
+    String getLocalTragetFileName(String path, String filename) {
+        
+        String srcFileName = null;
+        String tarFileName = null;
+ 
+
+        // get traget filename from last portion of path
+        StringTokenizer st = new StringTokenizer(path, "/\\");
+        while (st.hasMoreTokens()) {
+            srcFileName = st.nextToken();
+        }
+                
+        File targetFile = getFileByPath((filename != null) ? filename : srcFileName); 
+        
+        try {           
+            if (targetFile.isDirectory()) {
+                tarFileName = targetFile.getCanonicalPath() + "/"+ srcFileName;    
+            } else {
+                tarFileName = targetFile.getCanonicalPath();    
+            }         
+        } catch (IOException e) {
+            System.err.println(e.toString());
+            return null;
+        }           
+
+        return tarFileName;
+    }
 
     void get(String path, String filename)
     {
+        
+        filename = getLocalTragetFileName( path,  filename);
+        
         try {
             // The resource on the remote.
             String src = checkUri(path);
@@ -767,7 +858,7 @@ final class Client {
 
                 // FIXME: interactive ?
                 out.print("Aleady exists. " +
-                    "Do you want to overwrite it(Y/n)? ");
+                    "Do you want to overwrite it(y/n)? ");
                 BufferedReader in =
                     new BufferedReader(new InputStreamReader(System.in));
                 y = in.readLine();
@@ -788,43 +879,98 @@ final class Client {
             handleException(ex);
         }
     }
+    
+    String getRemoteTragetFileName(String filename, String path) {
+        
+        String srcPathName = null;
+        String target = null;
+       
+ 
+
+        // get traget filename from last portion of filename
+        StringTokenizer st = new StringTokenizer(filename, "/\\");
+        while (st.hasMoreTokens()) {
+            srcPathName = st.nextToken();
+        }
+        
+        
+        try {
+                
+            if (path != null) {
+                target = checkUri(path);
+                
+                // check is path a collection ?
+                String currentPath = webdavResource.getPath();
+                
+                webdavResource.setPath(target);
+                
+                if (webdavResource.exists()) {
+                    if (webdavResource.isCollection()) {
+                        target += "/" + srcPathName;
+                    } 
+                } 
+                
+                webdavResource.setPath(currentPath);
+                
+            } else {
+                target = checkUri(getPath() + "/" + srcPathName);
+            }
+                
+                            
+        } catch (Exception ex) {
+        }
+        
+        return target;
+               
+
+    }
+    
+    
+
 
     void put(String filename, String path)
     {
-        out.println("put " + filename + " " + path);
-
-// FIXME upload URLs !!!!
-//                if ((count == 2 && src.indexOf(":") > 1) ||
-//                    count == 1 && dest.indexOf(":") > 1) {
-//                    URL url = new URL(count == 1 ? dest : src);
-//                    out.print("Uploading  '" +
-//                                     ((count == 2) ? src : dest) +
-//                                     "' to '" + ((count == 2) ?
-//                                     dest : src) + "': ");
-//                    if (webdavResource.putMethod(dest, url)) {
-//                        out.println("succeeded.");
-//                    } else {
-//                        out.println("failed.");
-//                    }
-//                    continue;
-//                }
+        String y = "y";
 
         try {
-            String src = filename;
-            String dest =  checkUri(path);
-            File file = new File(dir.getCanonicalPath(), src);
-            if (file.exists()) {
-                out.print("Uploading  '" + src + "' to '" + dest + "': ");
-                if (webdavResource.putMethod(dest, file)) {
-                    out.println("succeeded.");
+            String src  = filename;
+            String dest = getRemoteTragetFileName( filename,  path);
+            
+            String currentPath = webdavResource.getPath();
+            
+            try {
+                webdavResource.setPath(dest);
+                if (webdavResource.exists()) {
+                    out.print("Aleady exists. " +
+                              "Do you want to overwrite it(y/n)? ");
+                    BufferedReader in =
+                          new BufferedReader(new InputStreamReader(System.in));
+                    y = in.readLine();
+                }
+                webdavResource.setPath(currentPath);
+            } catch (Exception ex) {
+            } 
+            
+            if (y.trim().equalsIgnoreCase("y") ||
+                  (y != null && y.length() == 0)) {
+ 
+            
+                File file = getFileByPath(src);
+                
+                if (file.exists()) {
+                    out.print("Uploading  '" + file.getCanonicalPath() + "' to '" + dest + "' ");
+                    
+                    if (webdavResource.putMethod(dest, file)) {
+                        out.println("succeeded.");
+                    }
+                    else {
+                        out.println("failed.");
+                        out.println(webdavResource.getStatusMessage());
+                    }
                 }
                 else {
-                    out.println("failed.");
-                    out.println(webdavResource.getStatusMessage());
+                    out.println("Warning: File not exists");
                 }
-            }
-            else {
-                out.println("Warning: File not exists");
             }
         }
         catch (Exception ex) {
@@ -922,12 +1068,32 @@ final class Client {
         }
     }
 
-    void lock(String path)
+    void lock(String path, String timeout, String scope, String owner)
     {
-        try {
+       try {
+            // Test the parameter
+            //
+            // Timeout
+            int to=0; 
+            if ((timeout != null) && (timeout.toLowerCase().substring(0,5).equals("-tinf")) ) { //infinite
+                to = LockMethod.TIMEOUT_INFINITY;   
+            } else {
+                to = (timeout == null)? 120 : Integer.parseInt(timeout.substring(2));
+            }
+            
+            
+            // scope
+            short scopeType = ((scope != null) && (scope.substring(2).toLowerCase().equals("shared")) ) ?
+                LockMethod.SCOPE_SHARED : LockMethod.SCOPE_EXCLUSIVE;
+           
+            // owner
+            owner = (owner != null) ? (owner.substring(2)) : owner;
+ 
             path = checkUri(path);
-            out.print("Locking '" + path + "': ");
-            if (webdavResource.lockMethod(path)) {
+            out.print("Locking '" + path + "' "); 
+            out.print( (owner != null) ? "owner:'"+ owner + "' " : "");
+            out.print("scope:" +scopeType+" timeout:"+to+ " :");
+            if (webdavResource.lockMethod(path, owner, to, scopeType)) {
                 out.println("succeeded.");
             } else {
                 out.println("failed.");
@@ -939,12 +1105,19 @@ final class Client {
         }
     }
 
-    void unlock(String path)
+    
+    void unlock(String path, String owner)
     {
         try {
+            // Test the parameter
+            //
+            // owner
+            owner = (owner != null) ? (owner.substring(2)) : owner;
+            
             path = checkUri(path);
-            out.print("Unlocking '" + path + "': ");
-            if (webdavResource.unlockMethod(path)) {
+            out.print("Unlocking '" + path + "'");
+            out.print((owner!=null)? (" owner:"+owner+": ") : (": "));
+            if (webdavResource.unlockMethod(path, owner)) {
                 out.println("succeeded.");
             } else {
                 out.println("failed.");
@@ -955,6 +1128,7 @@ final class Client {
             handleException(ex);
         }
     }
+
 
     void grant(String permission,String path, String principal)
     {
@@ -1303,7 +1477,74 @@ final class Client {
         }
     }
 
+    void beginTransaction(String timeout, String owner)
+    {
+        try {
+            checkUri(null);
 
+            // Test the parameter
+            //
+            // Timeout
+            int to=0; 
+            if ((timeout != null) && (timeout.toLowerCase().substring(0,5).equals("-tinf")) ) { //infinite
+                to = LockMethod.TIMEOUT_INFINITY;   
+            } else {
+                to = (timeout == null)? 120 : Integer.parseInt(timeout.substring(2));
+            }
+            
+            // owner
+            owner = (owner != null) ? (owner.substring(2)) : owner;
+ 
+            out.print("Starting transaction "); 
+            if (webdavResource.startTransaction(owner, to)) {
+                out.println("succeeded.");
+                out.println("Handle: '"+webdavResource.getTransactionHandle()+"'");
+            } else {
+                out.println("failed.");
+                out.println(webdavResource.getStatusMessage());
+            }
+        }
+        catch (Exception ex) {
+            handleException(ex);
+        }
+    }
+
+    void commitTransaction()
+    {
+        try {
+            checkUri(null);
+
+            out.print("Committing transaction: '" + webdavResource.getTransactionHandle() + "' ");
+            if (webdavResource.commitTransaction()) {
+                out.println("succeeded.");
+            } else {
+                out.println("failed.");
+                out.println(webdavResource.getStatusMessage());
+            }
+        }
+        catch (Exception ex) {
+            handleException(ex);
+        }
+    }
+    
+    void abortTransaction()
+    {
+        try {
+            checkUri(null);
+
+            out.print("Rolling back transaction: '" +webdavResource.getTransactionHandle()+ "' ");
+            if (webdavResource.abortTransaction()) {
+                out.println("succeeded.");
+            } else {
+                out.println("failed.");
+                out.println(webdavResource.getStatusMessage());
+            }
+        }
+        catch (Exception ex) {
+            handleException(ex);
+        }
+    }
+    
     ///////////////////////////////////////////////////////////////////
     // Support methods
     ///////////////////////////////////////////////////////////////////
@@ -1392,8 +1633,10 @@ final class Client {
     {
         StringBuffer buff = new StringBuffer();
         try {
-            buff.append("[" + httpURL.getHost().toUpperCase() + "] ");
-            buff.append(path);
+            buff.append("[" + httpURL.getHost().toUpperCase() + ":" );
+            buff.append(path+ "] ");
+            buff.append(dir.getCanonicalPath());
+            
         } catch (Exception e) {
             buff.append("[ Slide ]");
         }
@@ -1516,10 +1759,20 @@ final class Client {
             "Copy resource from source to destination path");
         out.println("  move source destination       " +
             "Move resource from source to destination path");
-        out.println("  lock path                     " +
-            "Lock specified resource");
-        out.println("  unlock path                   " +
-            "Unlock specified resource");
+        out.println("  lock path [-t(xxx|inf)] "       +
+            "[-s(SHARED|EXCLUSIVE)] [-oOWNER]\n"       +
+            "                                "         +
+            "Lock specified resource.\n"               +
+            "                                "         +
+            "default:\n"                               +
+            "                                "         +
+            "lock file -t120 -sexclusive with current owner");
+        out.println("  unlock path [-oOWNER]         " +
+            "Unlock specified resource.\n"+
+            "                                "         +
+            "default:\n"                               +
+            "                                "         +
+            "unlock file with current owner");
         out.println("  locks [<path>]                " +
             "Displays locks on specified resource");
         out.println("  propget path property ...     " +
@@ -1559,6 +1812,9 @@ final class Client {
             "Make new workspace");
         out.println("  update path target                 " +
             "Update a resource identified by path to version identified by target");
+        out.println("  begin                          starts a new transaction (only if server supports this)");
+        out.println("  commit                         commits the transaction started by begin (only if server supports this)");
+        out.println("  abort                          aborts and rolls back the transaction started by begin (only if server supports this)");
         out.println
             ("Aliases: help=?, open=connect, ls=dir, pwc=pwd, cc=cd, " +
              "lls=ldir, copy=cp,\n move=mv, delete=del=rm, mkcol=mkdir, " +
@@ -1924,7 +2180,7 @@ final class Client {
     }
 
     private static HttpURL uriToHttpURL(String uri) throws URIException {
-        return uri.startsWith("https") ? new HttpsURL(uri.toCharArray())
-                                       : new HttpURL(uri.toCharArray());
-	}
+        return uri.startsWith("https") ? new HttpsURL(uri)
+                                       : new HttpURL(uri);
+    }
 }

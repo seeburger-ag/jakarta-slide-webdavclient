@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/ResourceTypeProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/ResourceTypeProperty.java,v 1.5.2.1 2004/09/26 14:19:20 luetzkendorf Exp $
+ * $Revision: 1.5.2.1 $
+ * $Date: 2004/09/26 14:19:20 $
  *
  * ====================================================================
  *
@@ -23,9 +23,9 @@
 
 package org.apache.webdav.lib.properties;
 
-import org.apache.util.DOMUtils;
 import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.ResponseEntity;
+import org.apache.webdav.lib.util.DOMUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -33,13 +33,12 @@ import org.w3c.dom.NodeList;
  * An interface that describes a standard Resource Type property (as defined by
  * the WebDAV specification).
  *
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
- * @author Dirk Verbeeck
  */
 public class ResourceTypeProperty extends BaseProperty {
 
-    private boolean initialized=false;
-    private boolean isCollection;
+    private boolean initialized = false;
+    private boolean isCollection = false;
+    private boolean isPrincipal = false;
 
     // -------------------------------------------------------------- Constants
 
@@ -48,6 +47,12 @@ public class ResourceTypeProperty extends BaseProperty {
      * The property name.
      */
     public static final String TAG_NAME = "resourcetype";
+
+    /**
+     * The property collection tag.
+     */
+    public static final String TAG_COLLECTION = "collection";
+    public static final String TAG_PRINCIPAL = "principal";
 
 
     // ----------------------------------------------------------- Constructors
@@ -76,30 +81,37 @@ public class ResourceTypeProperty extends BaseProperty {
         init();
         return isCollection;
     }
+    
+    public boolean isPrincipal() {
+        init();
+        return isPrincipal;
+    }
 
     private void init()
     {
-        // FIXME: only <DAV:collection/> is supported
 
         if (initialized)
             return;
+
+        initialized=true;
 
         NodeList tmp = element.getChildNodes();
         for (int i = 0; tmp != null && i < tmp.getLength(); i++ ) {
             try {
                 Element child = (Element) tmp.item(i);
-                if ("collection".equals(DOMUtils.getElementLocalName(child))
+                if (TAG_COLLECTION.equals(DOMUtils.getElementLocalName(child))
                      && "DAV:".equals(DOMUtils.getElementNamespaceURI(child)))
                 {
                     isCollection=true;
-                    initialized=true;
-                    return;
+                }
+                if (TAG_PRINCIPAL.equals(DOMUtils.getElementLocalName(child))
+                        && "DAV:".equals(DOMUtils.getElementNamespaceURI(child)))
+                {
+                    isPrincipal=true;
                 }
             } catch (ClassCastException e) {
             }
         }
-        isCollection=false;
-        initialized=true;
     }
 
     /**

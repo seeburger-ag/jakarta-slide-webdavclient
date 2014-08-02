@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/MkcolMethod.java,v 1.1.2.2 2004/02/06 10:03:55 ib Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/06 10:03:55 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/MkcolMethod.java,v 1.3 2004/07/28 09:30:40 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:30:40 $
  *
  * ====================================================================
  *
@@ -61,7 +61,6 @@ import org.apache.commons.httpclient.HttpMethodBase;
  * HTTP/1.1 201 Created
  * </pre>
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
  */
 public class MkcolMethod
     extends HttpMethodBase {

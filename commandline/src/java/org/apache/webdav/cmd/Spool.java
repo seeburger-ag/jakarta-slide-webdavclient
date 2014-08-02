@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Spool.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Spool.java,v 1.3 2004/07/28 09:30:33 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:30:33 $
  *
  * ====================================================================
  *
@@ -34,7 +34,6 @@ import java.io.OutputStream;
  * an OutputStream allowing you to spool both streams to a
  * shared OutputStream.
  *
- * @author Dirk Verbeeck
  */
 public class Spool
 {

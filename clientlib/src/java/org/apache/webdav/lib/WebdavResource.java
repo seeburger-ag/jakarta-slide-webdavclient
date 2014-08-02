@@ -1,11 +1,11 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavResource.java,v 1.3.2.6 2004/03/29 14:55:44 ozeigermann Exp $
- * $Revision: 1.3.2.6 $
- * $Date: 2004/03/29 14:55:44 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavResource.java,v 1.29.2.3 2004/11/30 07:05:54 masonjm Exp $
+ * $Revision: 1.29.2.3 $
+ * $Date: 2004/11/30 07:05:54 $
  *
  * ====================================================================
  *
- * Copyright 1999-2002 The Apache Software Foundation 
+ * Copyright 1999-2002 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,45 +40,29 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Vector;
+
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.HttpsURL;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.util.DOMUtils;
-import org.apache.commons.httpclient.HttpURL;
-import org.apache.commons.httpclient.HttpsURL;
-import org.apache.commons.httpclient.URIException;
-import org.apache.util.WebdavStatus;
-import org.apache.webdav.lib.methods.AclMethod;
-import org.apache.webdav.lib.methods.AclReportMethod;
-import org.apache.webdav.lib.methods.CheckinMethod;
-import org.apache.webdav.lib.methods.CheckoutMethod;
-import org.apache.webdav.lib.methods.CopyMethod;
-import org.apache.webdav.lib.methods.DeleteMethod;
-import org.apache.webdav.lib.methods.DepthSupport;
-import org.apache.webdav.lib.methods.LabelMethod;
-import org.apache.webdav.lib.methods.LockMethod;
-import org.apache.webdav.lib.methods.MkWorkspaceMethod;
-import org.apache.webdav.lib.methods.MkcolMethod;
-import org.apache.webdav.lib.methods.MoveMethod;
-import org.apache.webdav.lib.methods.OptionsMethod;
-import org.apache.webdav.lib.methods.PropFindMethod;
-import org.apache.webdav.lib.methods.PropPatchMethod;
-import org.apache.webdav.lib.methods.ReportMethod;
-import org.apache.webdav.lib.methods.UncheckoutMethod;
-import org.apache.webdav.lib.methods.UnlockMethod;
-import org.apache.webdav.lib.methods.UpdateMethod;
-import org.apache.webdav.lib.methods.VersionControlMethod;
+
+import org.apache.webdav.lib.methods.*;
 import org.apache.webdav.lib.properties.AclProperty;
 import org.apache.webdav.lib.properties.LockDiscoveryProperty;
 import org.apache.webdav.lib.properties.PrincipalCollectionSetProperty;
 import org.apache.webdav.lib.properties.ResourceTypeProperty;
+import org.apache.webdav.lib.util.DOMUtils;
+import org.apache.webdav.lib.util.WebdavStatus;
 
 /**
  * The class <code>WebdavResource</code> is an abstract representation
@@ -182,9 +166,6 @@ import org.apache.webdav.lib.properties.ResourceTypeProperty;
  * ----------------------------------+-------------------------------------
  * </pre>
  *
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
- * @author Dirk Verbeeck
- * @author Remy Maucherat
  */
 public class WebdavResource extends WebdavSession {
 
@@ -242,6 +223,25 @@ public class WebdavResource extends WebdavSession {
         setHttpURL(httpURL, action, depth);
     }
 
+    /**
+     * The constructor.
+     *
+     * @param httpURL The specified http URL.
+     * @param action The action to set properties of this resource.
+     * @param depth The depth to find properties.
+     * @param followRedirects shall redirects from the server be accepted
+     * @exception HttpException
+     * @exception IOException
+     * @see #setDefaultAction(int)
+     */
+    public WebdavResource(HttpURL httpURL, int action, int depth,
+             boolean followRedirects)
+       throws HttpException, IOException {
+       
+       setFollowRedirects(this.followRedirects);
+       setHttpURL(httpURL, action, depth);
+    }
+
 
     /**
      * The constructor.
@@ -258,6 +258,22 @@ public class WebdavResource extends WebdavSession {
         setHttpURL(httpURL, defaultAction, depth);
 
     }
+    /**
+     * The constructor.
+     *
+     * @param httpURL The specified http URL.
+     * @param depth The depth to find properties.
+     * @param followRedirects Shall redirects be followed automatically.
+     * @exception HttpException
+     * @exception IOException
+     * @see #setDefaultAction(int)
+     */
+    public WebdavResource(HttpURL httpURL, int depth, boolean followRedirects)
+       throws HttpException, IOException {
+       
+       setFollowRedirects(followRedirects);
+       setHttpURL(httpURL, defaultAction, depth);
+    }
 
 
     /**
@@ -271,6 +287,18 @@ public class WebdavResource extends WebdavSession {
     public WebdavResource(HttpURL httpURL)
         throws HttpException, IOException {
 
+        setHttpURL(httpURL);
+    }
+    /**
+     * The constructor.
+     *
+     * @param httpURL The specified http URL.
+     * @param followRedirects shall redirects from the server be accepted
+     */
+    public WebdavResource(HttpURL httpURL, boolean followRedirects)
+        throws HttpException, IOException {
+        
+        setFollowRedirects(followRedirects);
         setHttpURL(httpURL);
     }
 
@@ -290,6 +318,13 @@ public class WebdavResource extends WebdavSession {
 
         setProxy(proxyHost, proxyPort);
         setHttpURL(httpURL);
+    }
+    public WebdavResource(HttpURL httpURL, String proxyHost, int proxyPort, boolean followRedirects)
+       throws HttpException, IOException {
+       
+       setFollowRedirects(followRedirects);
+       setProxy(proxyHost, proxyPort);
+       setHttpURL(httpURL);
     }
 
 
@@ -312,7 +347,16 @@ public class WebdavResource extends WebdavSession {
         setProxyCredentials(proxyCredentials);
         setHttpURL(httpURL);
     }
-
+    
+    public WebdavResource(HttpURL httpURL, String proxyHost, int proxyPort,
+          Credentials proxyCredentials, boolean followRedirects)
+        throws HttpException, IOException {
+       
+        setFollowRedirects(followRedirects);
+        setProxy(proxyHost, proxyPort);
+        setProxyCredentials(proxyCredentials);
+        setHttpURL(httpURL);
+    }
 
     /**
      * The constructor.
@@ -327,6 +371,12 @@ public class WebdavResource extends WebdavSession {
         throws HttpException, IOException {
 
         setHttpURL(escapedHttpURL);
+    }
+    public WebdavResource(String escapedHttpURL, boolean followRedirects)
+       throws HttpException, IOException {
+       
+       setFollowRedirects(followRedirects);
+       setHttpURL(escapedHttpURL);
     }
 
 
@@ -345,6 +395,15 @@ public class WebdavResource extends WebdavSession {
 
         setCredentials(credentials);
         setHttpURL(escapedHttpURL);
+    }
+    
+    public WebdavResource(String escapedHttpURL, Credentials credentials,
+          boolean followRedirects)
+       throws HttpException, IOException {
+       
+       setFollowRedirects(followRedirects);
+       setCredentials(credentials);
+       setHttpURL(escapedHttpURL);
     }
 
 
@@ -401,6 +460,20 @@ public class WebdavResource extends WebdavSession {
         throws HttpException, IOException {
 
         setHttpURL(httpURL, additionalPath);
+    }
+
+    /**
+     * The constructor.
+     *
+     * @param httpURL The http URL.
+     * @param additionalPath The added relative path.
+     * @param followRedirects shall redirects be accepted
+     */
+    public WebdavResource(HttpURL httpURL, String additionalPath, boolean followRedirects)
+       throws HttpException, IOException {
+   
+       setFollowRedirects(followRedirects);
+       setHttpURL(httpURL, additionalPath);
     }
 
 
@@ -730,9 +803,24 @@ public class WebdavResource extends WebdavSession {
      */
     protected LockDiscoveryProperty lockDiscovery;
 
+    protected boolean followRedirects = false;
 
     // --------------------------------------------------------- Basic settings
 
+    /**
+     * Generates and adds the "Transaction" header if this method is part of
+     * an externally controlled transaction.
+     */
+    protected void generateTransactionHeader(HttpMethod method) {
+        if (client == null || method == null) return;
+
+        WebdavState state = (WebdavState) client.getState();
+        String txHandle = state.getTransactionHandle();
+        if (txHandle != null) {
+            method.setRequestHeader("Transaction", "<" + txHandle + ">");
+        }
+    }
+    
     /**
      * Generate and add the If header to the specified HTTP method.
      */
@@ -906,30 +994,55 @@ public class WebdavResource extends WebdavSession {
      */
     protected void setWebdavProperties(Enumeration responses)
         throws HttpException, IOException {
-
+    
         // Make the resources in the collection empty.
         childResources.removeAll();
         while (responses.hasMoreElements()) {
-
+    
             ResponseEntity response =
                 (ResponseEntity) responses.nextElement();
-
+    
             boolean itself = false;
             String href = response.getHref();
             if (!href.startsWith("/"))
                 href = URIUtil.getPath(href);
-            String httpURLPath = httpURL.getEscapedPath();
-            int compared = httpURLPath.compareTo(href);
-            // Compare with the href path and requested-path itself.
-            if (compared == 0 || compared == -1 && href.endsWith("/") ||
-                compared == 1 && httpURLPath.endsWith("/")) {
-                // Set the status code for this resource.
-                if (response.getStatusCode() > 0)
-                    setStatusCode(response.getStatusCode());
-                setExistence(true);
-                itself = true;
+            href = decodeMarks(href);
+
+            /*
+             * Decode URIs to common (unescaped) format for comparison 
+             * as HttpClient.URI.setPath() doesn't escape $ and : chars.
+             */
+            String httpURLPath = httpURL.getPath();
+            String escapedHref = URIUtil.decode(href);
+            
+            // Normalize them to both have trailing slashes if they differ by one in length.
+            int lenDiff = escapedHref.length() - httpURLPath.length();
+            int compareLen = 0;
+            
+            if ( lenDiff == -1 && !escapedHref.endsWith("/")) {
+                compareLen = escapedHref.length();
+                lenDiff = 0;
+            }
+            else
+            if ( lenDiff == 1 && !httpURLPath.endsWith("/")) {
+                compareLen = httpURLPath.length();
+                lenDiff = 0;
             }
 
+            // if they are the same length then compare them.
+            if (lenDiff == 0) {
+                if ((compareLen == 0 && httpURLPath.equals(escapedHref))
+                    || httpURLPath.regionMatches(0, escapedHref, 0, compareLen))
+                {
+                    // escaped href and http path are the same
+                    // Set the status code for this resource.
+                    if (response.getStatusCode() > 0)
+                        setStatusCode(response.getStatusCode());
+                    setExistence(true);
+                    itself = true;
+                }
+            }
+    
             // Get to know each resource.
             WebdavResource workingResource = null;
             if (itself) {
@@ -939,41 +1052,39 @@ public class WebdavResource extends WebdavSession {
                 workingResource = createWebdavResource(client);
                 workingResource.setDebug(debug);
             }
-
+    
             // clear the current lock set
             workingResource.setLockDiscovery(null);
-
+    
             // Process the resource's properties
             Enumeration properties = response.getProperties();
             while (properties.hasMoreElements()) {
-
+    
                 Property property = (Property) properties.nextElement();
-
+    
                 // ------------------------------  Checking WebDAV properties
                 workingResource.processProperty(property);
             }
-
+    
             String displayName = workingResource.getDisplayName();
-
+    
             if (displayName == null || displayName.trim().equals("")) {
                 displayName = getName(href);
             }
             if (!itself) {
                 String myURI = httpURL.getEscapedURI();
                 char[] childURI = (myURI + (myURI.endsWith("/") ? "" : "/")
-                                   + URIUtil.encodePath(getName(href))
-                    ).toCharArray();
-		 HttpURL childURL = httpURL instanceof HttpsURL
-                                           ? new HttpsURL(childURI)
-		                           : new HttpURL(childURI);
-		childURL.setRawAuthority(httpURL.getRawAuthority());						  
-                workingResource.setHttpURL( childURL,
-                                           NOACTION, defaultDepth);
+                                   + URIUtil.getName(href)).toCharArray();
+                HttpURL childURL = httpURL instanceof HttpsURL
+                                   ? new HttpsURL(childURI)
+                                   : new HttpURL(childURI);
+                childURL.setRawAuthority(httpURL.getRawAuthority());
+                workingResource.setHttpURL(childURL, NOACTION, defaultDepth);
                 workingResource.setExistence(true);
                 workingResource.setOverwrite(getOverwrite());
             }
             workingResource.setDisplayName(displayName);
-
+    
             if (!itself)
                 childResources.addResource(workingResource);
         }
@@ -995,6 +1106,11 @@ public class WebdavResource extends WebdavSession {
      *  WebdavResource.ALL
      *
      * @param action The action type.
+     * @see #NOACTION
+     * @see #NAME
+     * @see #BASIC
+     * @see #DEFAULT
+     * @see #ALL
      */
     public static void setDefaultAction(int action) {
         defaultAction = action;
@@ -1083,6 +1199,21 @@ public class WebdavResource extends WebdavSession {
         return false;
     }
 
+    /**
+     * Sets a flag indicating that redirect responses from
+     * the server shall be followed.
+     */
+    public void setFollowRedirects(boolean value) {
+       this.followRedirects = value;
+    }
+    /**
+     * Returns the current "follow redirects" flag.
+     * @see #setFollowRedirects(boolean)
+     */
+    public boolean getFollowRedirects() {
+       return this.followRedirects;
+    }
+
 
     /**
      * Test that the httpURL is the same with the client.
@@ -1090,9 +1221,9 @@ public class WebdavResource extends WebdavSession {
      * @return true if the given httpURL is the client for this resource.
      */
     protected synchronized boolean isTheClient() throws URIException {
-
-        Credentials creds = client.getState().getCredentials(null,
-                                                             client.getHost());
+        HostConfiguration hostConfig = client.getHostConfiguration();
+        Credentials creds =
+            client.getState().getCredentials(null, hostConfig.getHost());
         String userName = null;
         String password = null;
 
@@ -1101,11 +1232,22 @@ public class WebdavResource extends WebdavSession {
             userName = upc.getUserName();
             password = upc.getPassword();
         }
-        HttpURL clientHttpURL =
-            new HttpURL(userName, password,
-                        client.getHost(), client.getPort());
-
-        return clientHttpURL.getAuthority().equals(httpURL.getAuthority());
+        String ref = httpURL.getUser();
+        boolean userMatches = userName != null ? userName.equals(ref)
+                                               : ref == null;
+        if (userMatches) {
+            ref = httpURL.getPassword();
+            userMatches = password != null ? password.equals(ref)
+                                           : ref == null;
+        } else {
+            return false;
+        }
+        if (userMatches) {
+            return httpURL.getHost().equalsIgnoreCase(hostConfig.getHost())
+                && httpURL.getPort()
+                == hostConfig.getProtocol().resolvePort(hostConfig.getPort());
+        }
+        return false;
     }
 
 
@@ -1127,7 +1269,9 @@ public class WebdavResource extends WebdavSession {
      */
     protected synchronized void setClient(HttpURL httpURL) throws IOException {
 
-        if ((client == null) || ((client != null) && !isTheClient())) {
+        if (client == null) {
+            client = getSessionInstance(httpURL);
+        } else if (!isTheClient()) {
             closeSession();
             client = getSessionInstance(httpURL);
         }
@@ -1138,13 +1282,14 @@ public class WebdavResource extends WebdavSession {
      * Set the HttpURL for this WebdavResource.
      *
      * @param httpURL the specified HttpURL.
-     * @param action The action to decide properties to find.
+     * @param action The action to decide, which properties to find.
      * @param depth The depth to find properties.
      * @exception HttpException
      * @exception IOException
      * @see #setHttpURL(java.lang.String)
      * @see #setUserInfo(java.lang.String, java.lang.String)
      * @see #setPath(java.lang.String)
+     * @see #setDefaultAction(int)
      */
     public void setHttpURL(HttpURL httpURL, int action, int depth)
         throws HttpException, IOException {
@@ -1182,13 +1327,14 @@ public class WebdavResource extends WebdavSession {
      *
      * @param httpURL The specified HttpURL.
      * @param additionalPath The added relative path.
-     * @param action The action to decide properties to find.
+     * @param action The action to decide, which properties to find.
      * @param depth The depth.
      * @exception HttpException
      * @exception IOException
      * @see #setHttpURL(java.lang.String)
      * @see #setUserInfo(java.lang.String, java.lang.String)
      * @see #setPath(java.lang.String)
+     * @see #setDefaultAction(int)
      */
     public void setHttpURL
         (HttpURL httpURL, String additionalPath, int action, int depth)
@@ -1206,12 +1352,13 @@ public class WebdavResource extends WebdavSession {
      *
      * @param httpURL The specified HttpURL.
      * @param additionalPath The added relative path.
-     * @param action The action to decide properties to find.
+     * @param action The action to decide, which properties to find.
      * @exception HttpException
      * @exception IOException
      * @see #setHttpURL(java.lang.String)
      * @see #setUserInfo(java.lang.String, java.lang.String)
      * @see #setPath(java.lang.String)
+     * @see #setDefaultAction(int)
      */
     public void setHttpURL
         (HttpURL httpURL, String additionalPath, int action)
@@ -1734,6 +1881,7 @@ public class WebdavResource extends WebdavSession {
      *
      * @param action The action to find properties for this resource.
      * @param depth the depth to which properties shall be found
+     * @see #setDefaultAction(int)
      */
     public void setProperties(int action, int depth)
         throws HttpException, IOException {
@@ -1782,11 +1930,16 @@ public class WebdavResource extends WebdavSession {
     }
 
     /**
-     * Test if it exists.
+     * Returns the last known information about the existence of this resource.
      * This is a wrapper method for getExistence.
      *
-     * @return true if it exists.
+     * A previous call to the method setProperties might be necessary to update
+     * that information.
+     *  
+     * @return true if the resource is known to exist<br>
+     *         false if the resource is known not to exist or its status is unknown.
      * @see #getExistence()
+     * @see #setProperties(int, int)
      */
     public boolean exists() {
         return getExistence();
@@ -1804,9 +1957,14 @@ public class WebdavResource extends WebdavSession {
 
 
     /**
-     * Get its existence.
+     * Returns the last known information about the existence of this resource.
      *
-     * @return true if it exists.
+     * A previous call to the method setProperties might be necessary to update that
+     * information.
+     *  
+     * @return true if the resource is known to exist<br>
+     *         false if the resource is known not to exist or its status is unknown.
+     * @see #setProperties(int, int)
      */
     public boolean getExistence() {
         return exists;
@@ -1814,10 +1972,11 @@ public class WebdavResource extends WebdavSession {
 
 
     /**
-     * Set the overwrite flag for COPY and MOVE.
+     * Set the overwrite flag for COPY, MOVE, BIND and REBIND.
      * Should be set before the method is executed.
      *
      * @param overwrite the overwrite flag
+     * @see #getOverwrite()
      */
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
@@ -1825,9 +1984,11 @@ public class WebdavResource extends WebdavSession {
 
 
     /**
-     * Get the current value of the overwrite flag for COPY and MOVE.
+     * Get the current value of the overwrite flag for COPY, MOVE, BIND and
+     * REBIND.
      *
      * @return true if the current flag is overwriting.
+     * @see #setOverwrite(boolean)
      */
     public boolean getOverwrite() {
         return overwrite;
@@ -1979,6 +2140,7 @@ public class WebdavResource extends WebdavSession {
      * array 1: getcontentlength
      * array 2: iscollection or getcontentype
      * array 3: getlastmodifieddate
+     * array 4: name
      *
      * @return An array of pathnames and more denoting the resources.
      * @exception HttpException
@@ -1997,9 +2159,10 @@ public class WebdavResource extends WebdavSession {
                 WebdavResource currentResource =
                     childResources.getResource(resourceName);
 
-                String[] longFormat = new String[4];
+                String[] longFormat = new String[5];
                 // displayname.
                 longFormat[0] = currentResource.getDisplayName();
+
 
                 long length = currentResource.getGetContentLength();
                 // getcontentlength
@@ -2019,6 +2182,11 @@ public class WebdavResource extends WebdavSession {
                     // Print the local fancy date format.
                     DateFormat.getDateTimeInstance().format(date);
                 hrefList.addElement(longFormat);
+
+                // real name of componente
+                longFormat[4] = currentResource.getName();
+
+
             } catch (Exception e) {
                 // FIXME: After if's gotten an exception, any solution?
                 if (debug > 0)
@@ -2094,16 +2262,33 @@ public class WebdavResource extends WebdavSession {
         setClient();
 
         AclMethod method = new AclMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
         for (int i=0; i<aces.length ; i++) {
             Ace ace = aces[i];
             method.addAce(ace);
         }
+
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
 
         return (statusCode >= 200 && statusCode < 300) ? true : false;
+    }
+
+
+    /**
+     * Return the <code>AclProperty</code> for the current resource
+     *
+     * @return acl property, null if the server doesn't respond with
+     * <code>AclProperty</code>
+     */
+    public AclProperty aclfindMethod() throws HttpException, IOException {
+        thisResource = true;
+        return aclfindMethod(httpURL.getPath());
     }
 
 
@@ -2128,6 +2313,10 @@ public class WebdavResource extends WebdavSession {
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    DepthSupport.DEPTH_0,
                                                    properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Enumeration responses = method.getResponses();
@@ -2158,6 +2347,19 @@ public class WebdavResource extends WebdavSession {
 
 
     /**
+     * Get the <code>PrincipalCollectionSetProperty</code> for the current
+     * resource.
+     *
+     * @return principal collection set Property, null if the server doesn't
+     * respond with a <code>PrincipalCollectionSetProperty</code>
+     */
+    public PrincipalCollectionSetProperty principalCollectionSetFindMethod()
+        throws HttpException, IOException {
+        thisResource = true;
+        return principalCollectionSetFindMethod(httpURL.getPath());
+    }
+
+    /**
      * Get the <code>PrincipalCollectionSetProperty</code> for the resource.
      *
      * @param path the server relative path of the resource to request
@@ -2178,6 +2380,9 @@ public class WebdavResource extends WebdavSession {
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    DepthSupport.DEPTH_0,
                                                    properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Enumeration responses = method.getResponses();
@@ -2207,13 +2412,23 @@ public class WebdavResource extends WebdavSession {
     }
 
 
+    /**
+     * Return the LockDiscoveryProperty for the current resource
+     *
+     * @return null if the server doesn't respond with a LockDiscoveryProperty
+     */
+    public LockDiscoveryProperty lockDiscoveryPropertyFindMethod()
+        throws HttpException, IOException {
+        thisResource = true;
+        return lockDiscoveryPropertyFindMethod(httpURL.getPath());
+    }
 
 
     /**
      * Return the LockDiscoveryProperty for the resource at the given path
      *
      * @param path the server relative path of the resource to request
-     * returns null if the server doesn't respond with a LockDiscoveryProperty
+     * @return null if the server doesn't respond with a LockDiscoveryProperty
      */
     public LockDiscoveryProperty lockDiscoveryPropertyFindMethod(String path)
         throws HttpException, IOException {
@@ -2229,6 +2444,9 @@ public class WebdavResource extends WebdavSession {
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    DepthSupport.DEPTH_0,
                                                    properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Enumeration responses = method.getResponses();
@@ -2286,6 +2504,8 @@ public class WebdavResource extends WebdavSession {
         setClient();
 
         GetMethod method = new GetMethod(URIUtil.encodePathQuery(path));
+
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         int statusCode = method.getStatusLine().getStatusCode();
@@ -2325,6 +2545,7 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         GetMethod method = new GetMethod(URIUtil.encodePathQuery(path));
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2362,24 +2583,37 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         GetMethod method = new GetMethod(URIUtil.encodePathQuery(path));
+
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
-        // Do a simple little loop to read the response back into the passed
-        // file parameter.
-        InputStream inStream = method.getResponseBodyAsStream();
-
-        FileOutputStream fos = new FileOutputStream(file);
-        byte buffer[] = new byte[2048];
-        int bytesRead;
-        while ((bytesRead = inStream.read(buffer)) >= 0) {
-            fos.write(buffer, 0, bytesRead);
-        }
-        inStream.close();
-        fos.close();
-
         setStatusCode(statusCode);
-        return (statusCode >= 200 && statusCode < 300) ? true : false;
-    }
+
+        // get the file only if status is any kind of OK
+        if (statusCode >= 200 && statusCode < 300) {
+
+            // Do a simple little loop to read the response back into the passed
+            // file parameter.
+            InputStream inStream = method.getResponseBodyAsStream();
+
+            FileOutputStream fos = new FileOutputStream(file);
+            byte buffer[] = new byte[65535];
+            int bytesRead;
+            while ((bytesRead = inStream.read(buffer)) >= 0) {
+                fos.write(buffer, 0, bytesRead);
+            }
+            inStream.close();
+            fos.close();
+
+            return true;
+
+        } else {
+            return false;
+
+        }
+
+
+   }
 
 
     /**
@@ -2420,6 +2654,7 @@ public class WebdavResource extends WebdavSession {
         method.setRequestHeader("Content-Length", String.valueOf(data.length));
         method.setRequestBody(new ByteArrayInputStream(data));
 
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2461,6 +2696,7 @@ public class WebdavResource extends WebdavSession {
             method.setRequestHeader("Content-Type", getGetContentType());
         method.setRequestContentLength(PutMethod.CONTENT_LENGTH_CHUNKED);
         method.setRequestBody(is);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2504,6 +2740,7 @@ public class WebdavResource extends WebdavSession {
         if (getGetContentType() != null && !getGetContentType().equals(""))
             method.setRequestHeader("Content-Type", getGetContentType());
         method.setRequestBody(data);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2551,6 +2788,7 @@ public class WebdavResource extends WebdavSession {
                                        ? (int) fileLength
                                        : PutMethod.CONTENT_LENGTH_CHUNKED);
         method.setRequestBody(new FileInputStream(file));
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2597,6 +2835,7 @@ public class WebdavResource extends WebdavSession {
         if (getGetContentType() != null && !getGetContentType().equals(""))
             method.setRequestHeader("Content-Type", getGetContentType());
         method.setRequestBody(url.openStream());
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2636,6 +2875,10 @@ public class WebdavResource extends WebdavSession {
             method = new OptionsMethod("*");
         else
             method = new OptionsMethod(URIUtil.encodePath(path));
+
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2690,6 +2933,10 @@ public class WebdavResource extends WebdavSession {
         HttpClient client = getSessionInstance(httpURL, true);
 
         OptionsMethod method = new OptionsMethod(httpURL.getEscapedPath());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector options = new Vector();
@@ -2745,6 +2992,10 @@ public class WebdavResource extends WebdavSession {
 
         OptionsMethod method = new OptionsMethod(httpURL.getEscapedPath(),
                                                  type);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector options = new Vector();
@@ -2795,6 +3046,10 @@ public class WebdavResource extends WebdavSession {
 
         OptionsMethod method = new OptionsMethod(URIUtil.encodePath(path),
                                                  type);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector options = new Vector();
@@ -2877,7 +3132,10 @@ public class WebdavResource extends WebdavSession {
         setClient();
         LabelMethod method = new LabelMethod(URIUtil.encodePath(path),
                                              labeltype, labelname);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
 
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -2894,6 +3152,9 @@ public class WebdavResource extends WebdavSession {
         // Default depth=0, type=by_name
         ReportMethod method = new ReportMethod(httpURL.getEscapedPath(),
                                                depth);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector results = new Vector();
@@ -2930,6 +3191,9 @@ public class WebdavResource extends WebdavSession {
         ReportMethod method =
             new ReportMethod(httpURL.getEscapedPath(), DepthSupport.DEPTH_0,
                              properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         return method.getResponses();
@@ -2943,6 +3207,9 @@ public class WebdavResource extends WebdavSession {
         // Default depth=0, type=by_name
         ReportMethod method = new ReportMethod(httpURL.getEscapedPath(), depth,
                                                properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         /*first draft, does work anyhow
@@ -2993,6 +3260,9 @@ public class WebdavResource extends WebdavSession {
         ReportMethod method = new ReportMethod(httpURL.getEscapedPath(), depth,
                                                properties.elements(),
                                                histUri.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector results = new Vector();
@@ -3027,6 +3297,10 @@ public class WebdavResource extends WebdavSession {
         // Default depth=0, type=by_name
         ReportMethod method = new ReportMethod(httpURL.getEscapedPath(), depth,
                                                sQuery);
+
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         client.executeMethod(method);
 
         Vector results = new Vector();
@@ -3101,7 +3375,11 @@ public class WebdavResource extends WebdavSession {
         // Change the depth for allprop
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    depth);
+
+        method.setDebug(debug);
+
         // Default depth=infinity, type=allprop
+        generateTransactionHeader(method);
         int status = client.executeMethod(method);
 
         // Set status code for this resource.
@@ -3172,6 +3450,10 @@ public class WebdavResource extends WebdavSession {
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    depth,
                                                    properties.elements());
+
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         int status = client.executeMethod(method);
 
         // Set status code for this resource.
@@ -3268,6 +3550,9 @@ public class WebdavResource extends WebdavSession {
         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
                                                    DepthSupport.DEPTH_0,
                                                    properties.elements());
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         int status = client.executeMethod(method);
 
         // Also accept OK sent by buggy servers.
@@ -3557,6 +3842,9 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         PropPatchMethod method = new PropPatchMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
         Enumeration names = properties.keys();
         boolean hasSomething = false;
@@ -3587,6 +3875,7 @@ public class WebdavResource extends WebdavSession {
             }
         }
         if (hasSomething) {
+            generateTransactionHeader(method);
             int statusCode = client.executeMethod(method);
             // Possbile Status Codes => SC_OK
             // WebdavStatus.SC_FORBIDDEN, SC_CONFLICT, SC_LOCKED, 507
@@ -3626,6 +3915,8 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         HeadMethod method = new HeadMethod(URIUtil.encodePathQuery(path));
+
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -3665,7 +3956,11 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         DeleteMethod method = new DeleteMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -3709,8 +4004,11 @@ public class WebdavResource extends WebdavSession {
         setClient();
         MoveMethod method = new MoveMethod(URIUtil.encodePath(source),
                                            URIUtil.encodePath(destination));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
         generateIfHeader(method);
         method.setOverwrite(overwrite);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         // Possbile MOVE Status Codes => SC_CREATED, SC_NO_CONTENT
@@ -3754,8 +4052,12 @@ public class WebdavResource extends WebdavSession {
         setClient();
         CopyMethod method = new CopyMethod(URIUtil.encodePath(source),
                                            URIUtil.encodePath(destination));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
         method.setOverwrite(overwrite);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         // Possbile COPY Status Codes => SC_CREATED, SC_NO_CONTENT
@@ -3798,7 +4100,9 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         MkcolMethod method = new MkcolMethod(URIUtil.encodePath(path));
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         // Possbile MKCOL Status Codes => SC_CREATED
@@ -3884,12 +4188,58 @@ public class WebdavResource extends WebdavSession {
     public boolean lockMethod(String path, String owner, int timeout)
         throws HttpException, IOException {
 
+        return lockMethod(path, owner, timeout, LockMethod.SCOPE_EXCLUSIVE);
+    }
+
+    /**
+     * Execute the LOCK method for the given path. This method tries to acquire
+     * an exclusive write lock with the given timeout value.
+     *
+     * @param path the server relative path of the resource to lock
+     * @param owner The owner string.
+     * @param timeout the timeout value.
+     * @param locktype, the scope of lock.
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     */
+    public boolean lockMethod(String path, String owner, int timeout, short lockType)
+        throws HttpException, IOException {
+
+        return lockMethod(path, owner, timeout, lockType, DepthSupport.DEPTH_INFINITY);    
+    }    
+    
+
+    /**
+     * Execute the LOCK method for the given path. This method tries to acquire
+     * an exclusive write lock with the given timeout value.
+     *
+     * @param path the server relative path of the resource to lock
+     * @param owner The owner string.
+     * @param timeout the timeout value.
+     * @param locktype, the scope of lock.
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     */
+    public boolean lockMethod(String path, String owner, int timeout, short lockType, int depth)
+        throws HttpException, IOException {            
+
         setClient();
+
+        if (owner == null) {
+            owner = (httpURL.getUser() != null) ? httpURL.getUser() : defaultOwner;
+        }
+
         // default lock type setting
-        short lockType = LockMethod.SCOPE_EXCLUSIVE;
         LockMethod method = new LockMethod(URIUtil.encodePath(path), owner,
                                            lockType, timeout);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        method.setDepth(depth);        
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
         String lock = method.getLockToken();
         WebdavState state = (WebdavState) client.getState();
@@ -3931,6 +4281,117 @@ public class WebdavResource extends WebdavSession {
         return lockMethod(path, owner, (int) timeout);
     }
 
+    /**
+     * Begins a new transaction. 
+     * The transaction handle returned by the WebDAV server will be remembered and included
+     * as a header of subsequent requests until either {@link #commitTransaction()} or {@link #abortTransaction()}
+     * are called. You can retrieve it using {@link #getTransactionHandle()}.    
+     * 
+     * @param owner the owner of this transaction
+     * @param timeout timeout in milleseconds
+     * @return <code>true</code> if the transaction has been successfully started, <code>false</code> otherwise
+     * @throws IOException if anything goes wrong
+     * @see #commitTransaction()
+     * @see #abortTransaction()
+     * @see #getTransactionHandle()
+     */
+    public boolean startTransaction(String owner, int timeout) throws IOException {
+        String path = httpURL.getPath();
+        
+        setClient();
+
+        if (owner == null) {
+            owner = (httpURL.getUser() != null) ? httpURL.getUser() : defaultOwner;
+        }
+
+        // default lock type setting
+        LockMethod method = new LockMethod(path, owner, timeout, true);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateIfHeader(method);
+        int statusCode = client.executeMethod(method);
+        String txHandle = method.getLockToken();
+        WebdavState state = (WebdavState) client.getState();
+        if (state != null) {
+            state.setTransactionHandle(txHandle);
+        }
+        this.owner = method.getOwner();
+
+        // Possbile LOCK Status Codes => SC_OK
+        // WebdavStatus.SC_SC_PRECONDITION_FAILED, SC_LOCKED
+        setStatusCode(statusCode, txHandle);
+
+        return (statusCode >= 200 && statusCode < 300) ? true : false;
+    }
+
+    /**
+     * Returns the transaction handle set by {@link #startTransaction(String, int)}. 
+     * 
+     * @return the current transaction handle or <code>null</code> if the client does not operate inside a transaction
+     * @throws IOException if anything goes wrong
+     * @see #startTransaction(String, int)
+     */
+    public String getTransactionHandle() throws IOException {
+        setClient();
+
+        // Get the lock for the given path.
+        WebdavState state = (WebdavState) client.getState();
+        if (state == null) return null;
+        String txHandle = state.getTransactionHandle();
+        return txHandle;
+    }
+    
+    /**
+     * Commits the transaction started by {@link #startTransaction(String, int)} and resets the transaction handle.
+     *  
+     * @return <code>true</code> if the transaction has been successfully committed, <code>false</code> otherwise
+     * @throws IOException if anything goes wrong
+     * @see #startTransaction(String, int)
+     * @see #abortTransaction()
+     * @see #getTransactionHandle()
+     */
+    public boolean commitTransaction() throws IOException {
+        String path = httpURL.getPath();
+        return endTransaction(path, UnlockMethod.COMMIT_TRANSACTION);
+    }
+
+    /**
+     * Aborts - i.e. rolls back all changes of - the transaction started by {@link #startTransaction(String, int)} and resets the transaction handle.
+     *  
+     * @return <code>true</code> if the transaction has been successfully committed, <code>false</code> otherwise
+     * @throws IOException if anything goes wrong
+     * @see #startTransaction(String, int)
+     * @see #abortTransaction()
+     * @see #getTransactionHandle()
+     */
+    public boolean abortTransaction() throws IOException {
+        String path = httpURL.getPath();
+        return endTransaction(path, UnlockMethod.ABORT_TRANSACTION);
+    }
+
+    protected boolean endTransaction(String path, int transactionStatus) throws IOException {
+        setClient();
+
+        // Get the lock for the given path.
+        WebdavState state = (WebdavState) client.getState();
+        if (state == null) return false;
+        String txHandle = state.getTransactionHandle();
+        if (txHandle == null) return false;
+        UnlockMethod method = new UnlockMethod(path, txHandle, transactionStatus);
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
+        generateIfHeader(method);
+        int statusCode = client.executeMethod(method);
+
+        setStatusCode(statusCode);
+        if (statusCode >= 200 && statusCode < 300) {
+            state.setTransactionHandle(null);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Execute the Unlock method for this WebdavResource.
@@ -3981,15 +4442,25 @@ public class WebdavResource extends WebdavSession {
         throws HttpException, IOException {
 
         setClient();
+
+        if (owner == null) {
+            owner = (httpURL.getUser() != null) ? httpURL.getUser() : defaultOwner;
+        }
+
         // Get the lock for the given path.
         WebdavState state = (WebdavState) client.getState();
         // Discover the locktoken from the given lock owner
+
         state = discoverLock(owner, path, state);
         String lock = state.getLock(path);
         if (lock == null) return false;
         // unlock for the given path.
         UnlockMethod method = new UnlockMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         method.setLockToken(lock);
         int statusCode = client.executeMethod(method);
 
@@ -4023,6 +4494,24 @@ public class WebdavResource extends WebdavSession {
 
 
     /**
+     * Discover and refresh lock tokens for a specific owner.
+     *
+     * @param owner the owner who's locks are to be discovered.
+     * @exception HttpException
+     * @exception IOException
+     */
+    public void discoverOwnLocks(String owner)
+    throws HttpException, IOException {
+
+        setClient();
+
+        WebdavState state = (WebdavState) client.getState();
+        state = discoverLock(owner, httpURL.getPath(), state);
+        client.setState(state);
+    }
+
+
+    /**
      * Discover the given owner and locktoken and set the locktoken
      *
      * @param owner the activelock owner
@@ -4032,9 +4521,16 @@ public class WebdavResource extends WebdavSession {
      */
     protected WebdavState discoverLock(String owner, String path,
                                        WebdavState state) {
+        try {
+            lockDiscovery=lockDiscoveryPropertyFindMethod(path);
+        } catch (Exception e) {
+            return state;
+        }
+
 
         if (lockDiscovery == null) return state;
         Lock[] activeLocks = lockDiscovery.getActiveLocks();
+
         if (activeLocks == null) return state;
         for (int i = 0; i < activeLocks.length; i++) {
             String activeLockOwner = activeLocks[i].getOwner();
@@ -4078,7 +4574,11 @@ public class WebdavResource extends WebdavSession {
         setClient();
         UpdateMethod method = new UpdateMethod(URIUtil.encodePath(path),
                                                URIUtil.encodePath(target));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4092,9 +4592,12 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
 
-        VersionControlMethod method =
-            new VersionControlMethod(URIUtil.encodePath(path));
+        VersionControlMethod method = new VersionControlMethod(
+                                            URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4108,10 +4611,14 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
 
-        VersionControlMethod method =
-            new VersionControlMethod(URIUtil.encodePath(path),
+        VersionControlMethod method = new VersionControlMethod(
+                                     URIUtil.encodePath(path),
                                      URIUtil.encodePath(target));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4152,7 +4659,10 @@ public class WebdavResource extends WebdavSession {
         setClient();
         MkWorkspaceMethod method =
             new MkWorkspaceMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         // Possbile MKCOL Status Codes => SC_CREATED
@@ -4278,7 +4788,11 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         CheckinMethod method = new CheckinMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4314,7 +4828,11 @@ public class WebdavResource extends WebdavSession {
 
         setClient();
         CheckoutMethod method = new CheckoutMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4353,7 +4871,11 @@ public class WebdavResource extends WebdavSession {
         setClient();
         UncheckoutMethod method =
             new UncheckoutMethod(URIUtil.encodePath(path));
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+
         generateIfHeader(method);
+        generateTransactionHeader(method);
         int statusCode = client.executeMethod(method);
 
         setStatusCode(statusCode);
@@ -4457,6 +4979,10 @@ public class WebdavResource extends WebdavSession {
                 properties,
                 DepthSupport.DEPTH_INFINITY,
                 reportType);
+
+        method.setDebug(debug);
+        method.setFollowRedirects(this.followRedirects);
+        generateTransactionHeader(method);
         int status = client.executeMethod(method);
 
         // Set status code for this resource.
@@ -4478,6 +5004,319 @@ public class WebdavResource extends WebdavSession {
     }
 
 
+    /**
+     * Execute the BIND method for this WebdavResource, given
+     * an existing path to bind with.
+     *
+     * @param newBinding  the new binding as a server relative path
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     * @see #setOverwrite(boolean)
+     */
+    public boolean bindMethod(String newBinding)
+        throws HttpException, IOException {
+        return bindMethod(httpURL.getPath(), newBinding);
+    }
+
+    /**
+     * Execute the BIND method given the new path to bind to an existing path.
+     *
+     * @param existingBinding  the existing binding as a server relative path
+     * @param newBinding       the new binding as a server relative path
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     * @see #setOverwrite(boolean)
+     */
+    public boolean bindMethod(String existingBinding, String newBinding)
+        throws HttpException, IOException {
+
+        setClient();
+        BindMethod method =
+            new BindMethod(URIUtil.encodePath(existingBinding),
+                           URIUtil.encodePath(newBinding));
+        method.setDebug(debug);
+        method.setOverwrite(overwrite);
+        generateTransactionHeader(method);
+        int statusCode = client.executeMethod(method);
+
+        // Possbile BIND Status Codes => SC_CREATED, SC_NO_CONTENT
+        // SC_FORBIDDEN, SC_CONFLICT, SC_PRECONDITION_FAILED,
+        // SC_LOCKED, SC_BAD_GATEWAY, SC_INSUFFICIENT_STORAGE,
+        // SC_LOOP_DETECTED
+        setStatusCode(statusCode);
+        return statusCode >= 200 && statusCode < 300;
+    }
+
+    /**
+     * Execute the UNBIND method for this WebdavResource.
+     *
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     */
+    public boolean unbindMethod() throws HttpException, IOException {
+        boolean result = unbindMethod(httpURL.getPath());
+        if (result) {
+            setExistence(false);
+        }
+
+        return result;
+    }
+
+    /**
+     * Execute the UNBIND method given the resource to Unbind.
+     *
+     * @param binding  the server relative path of the resource to unbind
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     */
+    public boolean unbindMethod(String binding)
+        throws HttpException, IOException {
+
+        setClient();
+        UnbindMethod method =
+            new UnbindMethod(URIUtil.encodePath(binding));
+        method.setDebug(debug);
+        generateTransactionHeader(method);
+        int statusCode = client.executeMethod(method);
+
+        // Possbile BIND Status Codes => SC_CREATED, SC_NOT_FOUND
+        // WebdavStatus.SC_FORBIDDEN, SC_CONFLICT, SC_PRECONDITION_FAILED,
+        // SC_LOCKED, SC_BAD_GATEWAY
+        setStatusCode(statusCode);
+        return statusCode >= 200 && statusCode < 300;
+    }
+
+    /**
+     * Execute the Rebind method for this WebdavResource given the new
+     * Resource to bind with.
+     * The REBIND method removes a binding to a resource from one collection,
+     * and adds a binding to that resource into another collection. It is
+     * effectively an atomic form of a MOVE request.
+     *
+     * @param newBinding the new binding as a server relative path
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     * @see #setOverwrite(boolean)
+     */
+    public boolean rebindMethod(String newBinding)
+        throws HttpException, IOException {
+        boolean result = rebindMethod(httpURL.getPath(), newBinding);
+        if (result) {
+            httpURL.setPath(newBinding);
+            refresh();
+        }
+
+        return result;
+    }
+
+    /**
+     * Execute the Rebind method given a resource to rebind and the new
+     * Resource to bind with.
+     * The REBIND method removes a binding to a resource from one collection,
+     * and adds a binding to that resource into another collection. It is
+     * effectively an atomic form of a MOVE request
+     *
+     * @param existingBinding  the existing binding as a server relative path
+     * @param newBinding       the new binding as a server relative path
+     * @return true if the method is succeeded.
+     * @exception HttpException
+     * @exception IOException
+     * @see #setOverwrite(boolean)
+     */
+    public boolean rebindMethod(String existingBinding, String newBinding)
+        throws HttpException, IOException {
+
+        setClient();
+        RebindMethod method =
+            new RebindMethod(URIUtil.encodePath(existingBinding),
+                             URIUtil.encodePath(newBinding));
+        method.setDebug(debug);
+        method.setOverwrite(overwrite);
+        generateTransactionHeader(method);
+        int statusCode = client.executeMethod(method);
+
+        // Possbile BIND Status Codes => SC_CREATED, SC_NO_CONTENT
+        // WebdavStatus.SC_FORBIDDEN, SC_CONFLICT, SC_PRECONDITION_FAILED,
+        // SC_LOCKED, SC_BAD_GATEWAY, SC_INSUFFICIENT_STORAGE,
+        // SC_LOOP_DETECTED
+        setStatusCode(statusCode);
+        return statusCode >= 200 && statusCode < 300;
+    }
+
+    /**
+     * Subscribes for notifications for modifications of WebDAV resources.
+     * 
+     * @param path URL path of the resource that is to be subscribed
+     * @param notificationType 
+     * @param callback the URL to be registered for notification, may be 
+     *        <code>null</code> if no callback shall be registered.
+     * @param notificationDelay
+     * @param depth the depth of the subscription (for valid values see 
+     *    {@link DepthSupport})
+     * @param lifetime duration of that subscription in seconds (Note: the
+     *    server may change this and return an other one; 
+     *    see {@link Subscription#getLifetime()}.
+     * 
+     * @return a {@link Subscription} or <code>null</code> if an error occurs
+     * @throws HttpException
+     * @throws IOException
+     */
+    public Subscription subscribeMethod(String path, 
+          String notificationType,
+          String callback,
+          long notificationDelay,
+          int depth,
+          long lifetime) 
+       throws HttpException, IOException
+    {
+       setClient();
+       
+       SubscribeMethod method = new SubscribeMethod(path);
+       method.setDebug(debug);
+       method.setFollowRedirects(this.followRedirects);
+
+       method.setCallback(callback);
+       method.setDepth(depth);
+       method.setSubsciptionLifetime(lifetime);
+       method.setNotificationType(notificationType);
+       method.setNotificationDelay(notificationDelay);
+       generateTransactionHeader(method);
+       
+       int statusCode = client.executeMethod(method);
+       
+       if (statusCode == HttpStatus.SC_OK) {
+          return new Subscription(
+                      path, 
+                      method.getResponsedSubscriptionId(),
+                      method.getCallback(),
+                      method.getResponsedSubscriptionLifetime(),
+                      method.getResponsedContentLocation(),
+                      method.getNotificationType()
+                );
+       } else {
+          return null;
+       }
+    }
+    
+    /**
+     * Refreshes a subscription.
+     * 
+     * @return <code>true</code> on success.
+     */
+    public boolean subscribeMethod(String path, int subscriptionId)
+       throws HttpException, IOException
+    {
+       setClient();
+       
+       SubscribeMethod method = new SubscribeMethod(path);
+       method.setDebug(debug);
+       method.setFollowRedirects(this.followRedirects);
+       
+       method.setSubscriptionId(subscriptionId);
+       generateTransactionHeader(method);
+       
+       int statusCode = client.executeMethod(method);
+       
+       if (statusCode == HttpStatus.SC_OK) {
+          return true;
+       } else {
+          return false;
+       } 
+    }
+    
+    /**
+     * Refreshes a subscription.
+     * 
+     * @param subscription The subscription to be refreshed.
+     * @return <code>true</code> on success
+     */
+    public boolean subscribeMethod(Subscription subscription)
+       throws HttpException, IOException
+    {
+       return subscribeMethod(subscription.getPath(), subscription.getId());
+    }
+    
+    /**
+     * Cancels a subscription.
+     * @param path URL path for that was subscribed 
+     * @return <code>true</code> on success
+     */
+    public boolean unsubscribeMethod(String path, int subscriptionId) 
+       throws HttpException, IOException
+    {
+       setClient();
+       
+       UnsubscribeMethod method = new UnsubscribeMethod(path);
+       method.setDebug(debug);
+       method.setFollowRedirects(this.followRedirects);   
+       
+       method.addSubscriptionId(subscriptionId);
+       generateTransactionHeader(method);
+       
+       int statusCode = client.executeMethod(method);
+       
+       if (statusCode == HttpStatus.SC_OK) {
+          return true;
+       } else {
+          return false;
+       }
+    }
+    /**
+     * Cancels a subscription.
+     * @param subscription
+     * @return <code>true</code> on success
+     */
+    public boolean unsubscribeMethod(Subscription subscription) 
+       throws HttpException, IOException
+    {
+       return unsubscribeMethod(subscription.getPath(),subscription.getId());
+    }
+    
+    /**
+     * Asks the server whether events for a given subscription are fired.
+     * @param contentLocation URL path returned by the SUBSCRIBE methods
+     *                        Content-Location header
+     * @param subscriptionId id of the subscription
+     * @return <code>true</code> if an event was fired
+     */
+    public boolean pollMethod(String contentLocation, int subscriptionId)
+       throws HttpException, IOException
+    {
+       setClient();
+       
+       PollMethod method = new PollMethod(contentLocation);
+       method.setDebug(debug);
+       method.setFollowRedirects(this.followRedirects);
+       
+       method.addSubscriptionId(subscriptionId);
+       generateTransactionHeader(method);
+       
+       int statusCode = client.executeMethod(method);
+       
+       if (statusCode == HttpStatus.SC_MULTI_STATUS) {
+          return method.getSubscriptionsWithEvents().size() > 0;
+       } else {
+          return false;
+       }
+    }
+    /**
+     * Asks the server whether events for a given subscription are fired.
+     * @param subscription the subscription to ask for
+     * @return <code>true</code> if an event was fired
+     */
+    public boolean pollMethod(Subscription subscription)
+       throws HttpException, IOException
+    {
+       return pollMethod(subscription.getContentLocation(), subscription.getId());
+    }
+
+    
+    
     private static String getName(String uri) {
         String escapedName = URIUtil.getName(
             uri.endsWith("/") ? uri.substring(0, uri.length() - 1): uri);
@@ -4486,5 +5325,76 @@ public class WebdavResource extends WebdavSession {
         } catch (URIException e) {
             return escapedName;
         }
+    }
+
+    /**
+     * Unescape octets for some characters that a server might (but should not)
+     * have escaped. These are: "-", "_", ".", "!", "~", "*", "'", "(", ")"
+     * Look at section 2.3 of RFC 2396.
+     */
+    private static String decodeMarks(String input) {
+        char[] sequence = input.toCharArray();
+        StringBuffer decoded = new StringBuffer(sequence.length);
+        for (int i = 0; i < sequence.length; i++) {
+            if (sequence[i] == '%' && i < sequence.length - 2) {
+                switch (sequence[i + 1]) {
+                case '2':
+                    switch (sequence[i + 2]) {
+                    case 'd':
+                    case 'D':
+                        decoded.append('-');
+                        i += 2;
+                        continue;
+                    case 'e':
+                    case 'E':
+                        decoded.append('.');
+                        i += 2;
+                        continue;
+                    case '1':
+                        decoded.append('!');
+                        i += 2;
+                        continue;
+                    case 'a':
+                    case 'A':
+                        decoded.append('*');
+                        i += 2;
+                        continue;
+                    case '7':
+                        decoded.append('\'');
+                        i += 2;
+                        continue;
+                    case '8':
+                        decoded.append('(');
+                        i += 2;
+                        continue;
+                    case '9':
+                        decoded.append(')');
+                        i += 2;
+                        continue;
+                    }
+                    break;
+                case '5':
+                    switch (sequence[i + 2]) {
+                    case 'f':
+                    case 'F':
+                        decoded.append('_');
+                        i += 2;
+                        continue;
+                    }
+                    break;
+                case '7':
+                    switch (sequence[i + 2]) {
+                    case 'e':
+                    case 'E':
+                        decoded.append('~');
+                        i += 2;
+                        continue;
+                    }
+                    break;
+                }
+            }
+            decoded.append(sequence[i]);
+        }
+        return decoded.toString();
     }
 }

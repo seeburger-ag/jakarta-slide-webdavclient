@@ -1,9 +1,9 @@
 // $ANTLR 2.7.3: "Client.g" -> "ClientLexer.java"$
 
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/SlideTokenTypes.java,v 1.1.2.3 2004/04/01 08:38:02 ozeigermann Exp $
- * $Revision: 1.1.2.3 $
- * $Date: 2004/04/01 08:38:02 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/SlideTokenTypes.java,v 1.7 2004/08/02 15:45:50 unico Exp $
+ * $Revision: 1.7 $
+ * $Date: 2004/08/02 15:45:50 $
  *
  * ====================================================================
  *
@@ -27,8 +27,8 @@ package org.apache.webdav.cmd;
 
 import java.io.*;
 import java.util.*;
-import org.apache.util.QName;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.QName;
 
 
 public interface SlideTokenTypes {
@@ -76,39 +76,42 @@ public interface SlideTokenTypes {
 	int PROPSET = 43;
 	int GET = 44;
 	int PUT = 45;
-	int LOCK = 46;
-	int UNLOCK = 47;
-	int LOCKS = 48;
-	int GRANT = 49;
-	int TO = 50;
-	int DENY = 51;
-	int REVOKE = 52;
-	int FROM = 53;
-	int ACL = 54;
-	int PRINCIPALCOLLECTIONSET = 55;
-	int VERSIONCONTROL = 56;
-	int UPDATE = 57;
-	int CHECKIN = 58;
-	int CHECKOUT = 59;
-	int UNCHECKOUT = 60;
-	int REPORT = 61;
-	int EREPORT = 62;
-	int LREPORT = 63;
-	int MKWS = 64;
-	int EXIT = 65;
-	int QUIT = 66;
-	int BYE = 67;
-	int SET = 68;
-	int CLOSE = 69;
-	int CP = 70;
-	int MV = 71;
-	int PROPPUT = 72;
-	int PRINCIPALCOL = 73;
-	int WS = 74;
-	int CHARS = 75;
-	int ALPHANUM = 76;
-	int ALPHA = 77;
-	int LOWALPHA = 78;
-	int UPALPHA = 79;
-	int DIGIT = 80;
+	int BEGIN = 46;
+	int COMMIT = 47;
+	int ABORT = 48;
+	int LOCK = 49;
+	int UNLOCK = 50;
+	int LOCKS = 51;
+	int GRANT = 52;
+	int TO = 53;
+	int DENY = 54;
+	int REVOKE = 55;
+	int FROM = 56;
+	int ACL = 57;
+	int PRINCIPALCOLLECTIONSET = 58;
+	int VERSIONCONTROL = 59;
+	int UPDATE = 60;
+	int CHECKIN = 61;
+	int CHECKOUT = 62;
+	int UNCHECKOUT = 63;
+	int REPORT = 64;
+	int EREPORT = 65;
+	int LREPORT = 66;
+	int MKWS = 67;
+	int EXIT = 68;
+	int QUIT = 69;
+	int BYE = 70;
+	int SET = 71;
+	int CLOSE = 72;
+	int CP = 73;
+	int MV = 74;
+	int PROPPUT = 75;
+	int PRINCIPALCOL = 76;
+	int WS = 77;
+	int CHARS = 78;
+	int ALPHANUM = 79;
+	int ALPHA = 80;
+	int LOWALPHA = 81;
+	int UPALPHA = 82;
+	int DIGIT = 83;
 }

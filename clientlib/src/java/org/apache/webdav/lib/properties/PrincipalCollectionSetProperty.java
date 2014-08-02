@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/PrincipalCollectionSetProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/PrincipalCollectionSetProperty.java,v 1.4 2004/08/02 15:45:50 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:50 $
  *
  * ====================================================================
  *
@@ -24,9 +24,9 @@
 package org.apache.webdav.lib.properties;
 
 import java.util.Vector;
-import org.apache.util.DOMUtils;
 import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.ResponseEntity;
+import org.apache.webdav.lib.util.DOMUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -35,8 +35,7 @@ import org.w3c.dom.NodeList;
  * This class models the <code>&lt;D:principal-collection-set&gt;</code> property, which is
  * defined in the WebDAV Access Control Protocol specification.
  *
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.4 $
  */
 public class PrincipalCollectionSetProperty extends BaseProperty {
 

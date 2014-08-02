@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropPatchMethod.java,v 1.1.2.1 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/PropPatchMethod.java,v 1.6 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -30,17 +30,13 @@ import java.util.Hashtable;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.WebdavStatus;
-import org.apache.util.XMLPrinter;
+import org.apache.webdav.lib.util.WebdavStatus;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 
 /**
  * PROPPATCH Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
- * @author <a href="mailto:eurrow@sas.com">Robert Owen</a>
- * @author Dirk Verbeeck
  */
 public class PropPatchMethod
     extends XMLResponseMethodBase {
@@ -192,6 +188,8 @@ public class PropPatchMethod
      */
     protected String generateRequestBody() {
         XMLPrinter printer = new XMLPrinter();
+
+
         printer.writeXMLHeader();
         printer.writeElement("D", "DAV:", "propertyupdate",
                              XMLPrinter.OPENING);

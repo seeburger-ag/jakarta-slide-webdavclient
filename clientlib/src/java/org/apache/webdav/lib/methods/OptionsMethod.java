@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/OptionsMethod.java,v 1.1.2.2 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/OptionsMethod.java,v 1.6 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -38,8 +38,8 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.WebdavStatus;
-import org.apache.util.XMLPrinter;
+import org.apache.webdav.lib.util.WebdavStatus;
+import org.apache.webdav.lib.util.XMLPrinter;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -48,7 +48,6 @@ import org.xml.sax.SAXException;
 /**
  * OPTIONS Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
  */
 public class OptionsMethod
     extends XMLResponseMethodBase {
@@ -264,6 +263,7 @@ public class OptionsMethod
 
         if (type != 0){
             XMLPrinter printer = new XMLPrinter();
+
             printer.writeXMLHeader();
             //System.out.println(printer.toString());
             printer.writeElement("D", "DAV:", "options",

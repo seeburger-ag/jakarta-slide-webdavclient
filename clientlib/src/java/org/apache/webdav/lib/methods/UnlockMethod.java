@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/UnlockMethod.java,v 1.1.2.2 2004/02/06 10:03:55 ib Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/06 10:03:55 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/UnlockMethod.java,v 1.6 2004/07/28 09:30:37 ib Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/07/28 09:30:37 $
  *
  * ====================================================================
  *
@@ -26,7 +26,7 @@ package org.apache.webdav.lib.methods;
 import java.io.IOException;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethodBase;
+
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.webdav.lib.WebdavState;
@@ -34,22 +34,43 @@ import org.apache.webdav.lib.WebdavState;
 /**
  * UNLOCK Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
  */
 public class UnlockMethod
-    extends HttpMethodBase {
+    extends XMLResponseMethodBase {
 
-
+    public final static int NO_TRANSACTION = -1;
+    public final static int ABORT_TRANSACTION = 0;
+    public final static int COMMIT_TRANSACTION = 1;
+    
     // ----------------------------------------------------- Instance Variables
 
 
     private String lockToken = null;
 
+    private int transactionStatus = NO_TRANSACTION;
 
     // ----------------------------------------------------------- Constructors
 
+    /**
+     * Creates an unlock method that <em>ends a transaction</em> when server supports
+     * them in a 
+     * <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wss/wss/_webdav_lock.asp">MS like style</a>.
+     * The transacion handle of transaction is stored as the lock token.   
+     * <br><br>
+     * To start a transaction
+     * use {@link LockMethod}. 
 
+     * @param path any path inside Slide's scope
+     * @param txHandle lock token specifying transaction handle
+     * @param transactionStatus status of transaction as described in {@link #setTransactionStatus(int)}
+     * 
+     */
+    public UnlockMethod(String path, String txHandle, int transactionStatus) {
+        this(path);
+        setLockToken(txHandle);
+        setTransactionStatus(transactionStatus);
+    }
+    
     /**
      * Method constructor.
      */
@@ -82,11 +103,37 @@ public class UnlockMethod
         this.lockToken = lockToken;
     }
 
+    /**
+     * Gets the parameter described in {@link #setTransactionStatus(int)}.
+     * 
+     * @return either {@link UnlockMethod#COMMIT_TRANSACTION} or {@link UnlockMethod#ABORT_TRANSACTION} as the real
+     * transaction status or {@link UnlockMethod#NO_TRANSACTION} to indicate this method is not used for
+     * transaction control 
+     */
+    public int getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    /**
+     * Sets the transaction status of this method when it is used to end a externally controlled
+     * transaction.
+     * 
+     * @param transactionStatus {@link UnlockMethod#COMMIT_TRANSACTION} to set the status to successful commit or
+     * {@link UnlockMethod#ABORT_TRANSACTION} to let the transaction abort discarding all changes associated to it. 
+     * 
+     */
+    public void setTransactionStatus(int transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
 
     // --------------------------------------------------- WebdavMethod Methods
 
     public String getName() {
         return "UNLOCK";
+    }
+
+    public void recycle() {
+        this.transactionStatus = NO_TRANSACTION;
     }
 
     /**
@@ -105,9 +152,6 @@ public class UnlockMethod
         }
     }
 
-
-
-
     /**
      * Generate additional headers needed by the request.
      *
@@ -123,13 +167,20 @@ public class UnlockMethod
 
     }
 
+    protected String generateRequestBody() {
+        if (getTransactionStatus() == NO_TRANSACTION) {
+            return "";
+        } else {
+            return "<D:transactioninfo xmlns:D='DAV:'>\n  <D:transactionstatus>"
+                    + (getTransactionStatus() == ABORT_TRANSACTION ? "<D:abort/>" : "<D:commit/>")
+                    + "</D:transactionstatus>\n</D:transactioninfo>";
+        }
+    }
+    
     protected void processResponseBody(HttpState state, HttpConnection conn) {
         if ((getStatusLine().getStatusCode() == HttpStatus.SC_NO_CONTENT) &&
             (state instanceof WebdavState)) {
             ((WebdavState) state).removeLock(getPath(), lockToken);
         }
     }
-
-
-
 }

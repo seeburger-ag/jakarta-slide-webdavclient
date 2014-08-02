@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/AclMethod.java,v 1.1.2.2 2004/03/22 16:26:08 ib Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/03/22 16:26:08 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/AclMethod.java,v 1.8 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.8 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -29,16 +29,14 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.XMLPrinter;
 import org.apache.webdav.lib.Ace;
 import org.apache.webdav.lib.Privilege;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 /**
  * ACL Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author Dirk Verbeeck
  */
 public class AclMethod
     extends XMLResponseMethodBase {
@@ -118,6 +116,7 @@ public class AclMethod
     protected String generateRequestBody() {
 
         XMLPrinter printer = new XMLPrinter();
+
         printer.writeXMLHeader();
         printer.writeElement("D", "DAV:", "acl",
                              XMLPrinter.OPENING);
@@ -188,7 +187,14 @@ public class AclMethod
                 Privilege privilege = (Privilege) privilegeList.nextElement();
                 printer.writeElement("D", null, "privilege",
                                      XMLPrinter.OPENING);
-                printer.writeElement(null,privilege.getNamespace(),privilege.getName(), XMLPrinter.NO_CONTENT);
+                String nsURI = privilege.getNamespace();
+                if ("DAV:".equals(nsURI)) {
+                    printer.writeElement("D", null, privilege.getName(),
+                                         XMLPrinter.NO_CONTENT);
+                } else {
+                    printer.writeElement("Z", nsURI, privilege.getName(),
+                                         XMLPrinter.NO_CONTENT);
+                }
                 printer.writeElement("D", null, "privilege",
                                      XMLPrinter.CLOSING);
             }

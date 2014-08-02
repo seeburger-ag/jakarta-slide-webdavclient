@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavFile.java,v 1.2.2.2 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.2.2.2 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavFile.java,v 1.5 2004/07/28 09:31:39 ib Exp $
+ * $Revision: 1.5 $
+ * $Date: 2004/07/28 09:31:39 $
  *
  * ====================================================================
  *
@@ -39,7 +39,6 @@ import org.apache.commons.httpclient.util.URIUtil;
 /**
  * Implements a file for WebDav
  *
- * @author Eckard Buchner
  */
 public class WebdavFile extends File {
 

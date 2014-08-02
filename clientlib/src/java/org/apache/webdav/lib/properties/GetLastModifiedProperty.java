@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/GetLastModifiedProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/GetLastModifiedProperty.java,v 1.4.2.1 2004/09/26 14:19:20 luetzkendorf Exp $
+ * $Revision: 1.4.2.1 $
+ * $Date: 2004/09/26 14:19:20 $
  *
  * ====================================================================
  *
@@ -22,13 +22,6 @@
  */
 package org.apache.webdav.lib.properties;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import org.apache.util.DOMUtils;
-import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.ResponseEntity;
 import org.w3c.dom.Element;
 
@@ -38,10 +31,9 @@ import org.w3c.dom.Element;
  * the name might misleadingly imply, have anything to do with getting the most
  * recently modified property.
  *
- * @author BC Holmes
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.4.2.1 $
  */
-public class GetLastModifiedProperty extends BaseProperty {
+public class GetLastModifiedProperty extends DateProperty {
 
 
     // -------------------------------------------------------------- Constants
@@ -56,6 +48,7 @@ public class GetLastModifiedProperty extends BaseProperty {
     /**
      * The standard date format for the last modified date, as specified in
      * the HTTP 1.1 specification (RFC 2068).
+     * @deprecated
      */
     public static final String DATE_FORMAT = "EEE, d MMM yyyy kk:mm:ss z";
 
@@ -68,35 +61,6 @@ public class GetLastModifiedProperty extends BaseProperty {
      */
     public GetLastModifiedProperty(ResponseEntity response, Element element) {
         super(response, element);
-        // RFC 1123, 822. Date and time specification is English.
-        format = new SimpleDateFormat(DATE_FORMAT, Locale.US);
     }
-
-
-    // ----------------------------------------------------- Instance Variables
-
-
-    protected DateFormat format = null;
-
-
-    // --------------------------------------------------------- Public Methods
-
-
-    /**
-     * Get the date of the last modification.
-     *
-     * @return the last modified date.
-     */
-    public Date getDate() {
-        Date date = null;
-        try {
-            synchronized (format) {
-                date = format.parse(DOMUtils.getTextValue(element));
-            }
-        } catch (ParseException e) {
-        }
-        return date;
-    }
-
 
 }

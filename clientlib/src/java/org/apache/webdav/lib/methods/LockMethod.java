@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/LockMethod.java,v 1.1.2.1 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/LockMethod.java,v 1.6.2.2 2004/10/02 17:33:49 luetzkendorf Exp $
+ * $Revision: 1.6.2.2 $
+ * $Date: 2004/10/02 17:33:49 $
  *
  * ====================================================================
  *
@@ -33,10 +33,12 @@ import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.util.DOMUtils;
-import org.apache.util.DOMWriter;
+import org.apache.commons.httpclient.util.URIUtil;
+
 import org.apache.webdav.lib.WebdavState;
 import org.apache.webdav.lib.properties.LockEntryProperty;
+import org.apache.webdav.lib.util.DOMUtils;
+import org.apache.webdav.lib.util.DOMWriter;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -87,8 +89,6 @@ import org.w3c.dom.Text;
  * <tr><td>Exclusive    </td><td>Failure        </td><td>Failure     </td></tr>
  * </table>
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@interlog.org">B.C. Holmes</a>
  */
 public class LockMethod
     extends XMLResponseMethodBase implements DepthSupport {
@@ -144,11 +144,38 @@ public class LockMethod
      * Lock token.
      */
     private String lockToken = null;
+    
+    private boolean typeTransaction = false;
 
 
     // ----------------------------------------------------------- Constructors
 
 
+    /**
+     * Creates a lock method that can <em>start a transaction</em> when server supports
+     * them in a 
+     * <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wss/wss/_webdav_lock.asp">MS like style</a>.
+     * The transacion handle of the started transaction will be returned as the lock token. 
+     * To let subsequent requests participate in the transaction add a  
+     * <code>Transaction</code> header with the lock token as value. You will have to enclose it in '&lt;' and '>' just
+     * like ordinary lock tokens.  
+     * <br><br>
+     * To either commit or abort the transaction
+     * use {@link UnlockMethod}. 
+     *
+     * @param path any path inside Slide's scope
+     * @param owner of this transaction 
+     * @param timeout timeout of this transaction
+     * @param isTransaction <code>true</code> when this method is used to starte a transaction
+     * 
+     */
+    public LockMethod(String path, String owner, int timeout, boolean isTransaction) {
+        this(path);
+        setOwner(owner);
+        setTimeout(timeout);
+        setTypeTransaction(isTransaction);
+    }
+    
     /**
      * Method constructor.
      */
@@ -243,7 +270,13 @@ public class LockMethod
         }
     }
 
+    public boolean isTypeTransaction() {
+        return typeTransaction;
+    }
 
+    public void setTypeTransaction(boolean typeTransaction) {
+        this.typeTransaction = typeTransaction;
+    }
 
     /**
      * Depth setter.
@@ -364,6 +397,7 @@ public class LockMethod
         this.depth = DEPTH_INFINITY;
         this.scope = SCOPE_EXCLUSIVE;
         this.timeout = TIMEOUT_INFINITY;
+        this.typeTransaction = false;
     }
 
 
@@ -445,8 +479,13 @@ public class LockMethod
                 Element locktype = document.createElement("DAV:locktype");
                 lockinfo.appendChild(locktype);
 
-                Element write = document.createElement("DAV:write");
-                locktype.appendChild(write);
+                if (typeTransaction) {
+                    Element transaction = document.createElement("DAV:transaction");
+                    locktype.appendChild(transaction);
+                } else {
+                    Element write = document.createElement("DAV:write");
+                    locktype.appendChild(write);
+                }
 
                 Element owner = document.createElement("DAV:owner");
                 lockinfo.appendChild(owner);
@@ -477,46 +516,41 @@ public class LockMethod
     public void parseResponse(InputStream input, HttpState state, HttpConnection conn)
         throws IOException, HttpException {
         int status = getStatusLine().getStatusCode();
-//      if (status == HttpStatus.SC_OK ||
-//          status == HttpStatus.SC_MULTI_STATUS ||
-//          status == HttpStatus.SC_CONFLICT) {
         if (status == HttpStatus.SC_OK      ||
             status == HttpStatus.SC_CREATED ||
             status == HttpStatus.SC_MULTI_STATUS ) {
 
             parseXMLResponse(input);
 
-            if ( (status == HttpStatus.SC_OK) &&
-                    (state instanceof WebdavState)) {
-                String prefix = DOMUtils.findDavPrefix(
-                    getResponseDocument());
-                NodeList list = getResponseDocument().getDocumentElement()
-                    .getElementsByTagName(prefix + "locktoken");
+            NodeList list = getResponseDocument().getDocumentElement()
+                  .getElementsByTagNameNS("DAV:", "locktoken");
 
-                if (list.getLength() == 1) {
-                    Element locktoken = (Element) list.item(0);
-                    NodeList list2 = locktoken.getElementsByTagName(
-                        prefix + "href");
-                    if (list2.getLength() == 1) {
-                        this.lockToken = DOMUtils.getTextValue(list2.item(0));
-                        ((WebdavState) state).addLock
-                            (getPath(), this.lockToken);
+            if (list.getLength() == 1) {
+                Element locktoken = (Element) list.item(0);
+                NodeList list2 = locktoken.getElementsByTagNameNS("DAV:", "href");
+                if (list2.getLength() == 1) {
+                    this.lockToken = DOMUtils.getTextValue(list2.item(0));
+                    if (state instanceof WebdavState) {
+                       /* 
+                        * lockMethod/unlockMethod take unescaped URIs but LockMathod.getPath()
+                        * func returns an escaped URI so searching for the lock by path name in 
+                        * the state object doesn't work. Convert escaped back to unescaped.
+                        */
+                        ((WebdavState) state).addLock(URIUtil.decode(getPath()), 
+                                this.lockToken);
                     }
                 }
+            }
 
-                list = getResponseDocument().getDocumentElement()
-                    .getElementsByTagName(prefix + "owner");
+            list = getResponseDocument().getDocumentElement()
+                  .getElementsByTagNameNS("DAV:", "owner");
 
-                if (list.getLength() == 1) {
-                    Element owner = (Element)list.item(0);
+            if (list.getLength() == 1) {
+                Element owner = (Element)list.item(0);
 
-                    this.owner = DOMUtils.getTextValue(owner);
-                }
+                this.owner = DOMUtils.getTextValue(owner);
             }
         }
     }
-
-
-
 }
 

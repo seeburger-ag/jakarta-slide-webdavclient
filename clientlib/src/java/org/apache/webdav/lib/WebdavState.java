@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavState.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavState.java,v 1.4 2004/07/28 09:31:38 ib Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/07/28 09:31:38 $
  *
  * ====================================================================
  *
@@ -32,7 +32,6 @@ import org.apache.commons.httpclient.HttpState;
 /**
  * Session state.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
  */
 public class WebdavState extends HttpState {
 
@@ -57,6 +56,10 @@ public class WebdavState extends HttpState {
      */
     protected ArrayList lockTokens = new ArrayList();
 
+    /**
+     * Transaction handle of current session of <code>null</code> if not inside of transaction.
+     */
+    protected String transactionHandle = null;
 
     // ------------------------------------------------------------- Properties
 
@@ -156,5 +159,11 @@ public class WebdavState extends HttpState {
 
     }
 
+    public String getTransactionHandle() {
+        return transactionHandle;
+    }
 
+    public void setTransactionHandle(String transactionHandle) {
+        this.transactionHandle = transactionHandle;
+    }
 }

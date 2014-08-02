@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/CheckinMethod.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/CheckinMethod.java,v 1.4 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -28,7 +28,7 @@ import java.io.InputStream;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.WebdavStatus;
+import org.apache.webdav.lib.util.WebdavStatus;
 
 
 /**
@@ -59,7 +59,6 @@ import org.apache.util.WebdavStatus;
  * Content-type: text/xml; charset="utf-8"
  * </pre>
  *
- * @author <a href="mailto:Cristina.Karpenstein@softwareag.com">Cristina Karpenstein</a>
  */
 public class CheckinMethod
     extends XMLResponseMethodBase {

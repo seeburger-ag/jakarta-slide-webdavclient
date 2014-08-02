@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/CopyMethod.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/CopyMethod.java,v 1.6 2004/07/28 09:30:48 ib Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/07/28 09:30:48 $
  *
  * ====================================================================
  *
@@ -32,8 +32,6 @@ import org.apache.commons.httpclient.HttpState;
 /**
  * COPY Method.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
  */
 public class CopyMethod
     extends XMLResponseMethodBase {
@@ -74,6 +72,10 @@ public class CopyMethod
         setOverwrite(overwrite);
     }
 
+    public CopyMethod(String source, String destination, boolean overwrite, int depth) {
+        this(source, destination, overwrite);
+        setDepth(depth);
+    }
 
     // ----------------------------------------------------- Instance Variables
 
@@ -89,6 +91,10 @@ public class CopyMethod
      */
     private boolean overwrite = true;
 
+    /**
+     * Depth.
+     */
+    private int depth = DepthSupport.DEPTH_INFINITY;
 
     // ----------------------------------------------------- Instance Variables
 
@@ -105,8 +111,16 @@ public class CopyMethod
             setOverwrite(! (headerValue.equalsIgnoreCase("F") ||
                            headerValue.equalsIgnoreCase("False") ) );
         }
-        else if(headerName.equalsIgnoreCase("Destination")){
+        else if (headerName.equalsIgnoreCase("Destination")){
             setDestination(headerValue);
+        }
+        else if (headerName.equalsIgnoreCase("Depth")) {
+            if (headerValue.equalsIgnoreCase("Infinity")) {
+                setDepth(DepthSupport.DEPTH_INFINITY);
+            }
+            else if (headerValue.equalsIgnoreCase("0")) {
+                setDepth(0);
+            }
         }
         else{
             super.setRequestHeader(headerName, headerValue);
@@ -167,6 +181,24 @@ public class CopyMethod
         return overwrite;
     }
 
+    /**
+     * Depth setter.
+     * 
+     * @param depth New depth value
+     */
+    public void setDepth(int depth) {
+        checkNotUsed();
+        this.depth = depth;
+    }
+    
+    /**
+     * Depth getter.
+     * 
+     * @return int Depth value
+     */
+    public int getDepth() {
+        return this.depth;
+    }
 
     public String getName() {
         return "COPY";
@@ -186,16 +218,21 @@ public class CopyMethod
 
         super.addRequestHeaders(state, conn);
 
-        String absoluteDestination =
-            conn.getProtocol().getScheme() + "://" + conn.getHost() + ":"
-            + conn.getPort() + destination;
+        String absoluteDestination = MoveMethod.getAbsoluteDestination(conn, destination);
         super.setRequestHeader("Destination", absoluteDestination);
 
         if (!isOverwrite())
             super.setRequestHeader("Overwrite", "F");
 
+        switch (depth) {
+	        case DepthSupport.DEPTH_0:
+	            super.setRequestHeader("Depth", "0");
+	            break;
+	        case DepthSupport.DEPTH_INFINITY:
+	            super.setRequestHeader("Depth", "Infinity");
+	            break;
+        }
     }
-
 
 }
 

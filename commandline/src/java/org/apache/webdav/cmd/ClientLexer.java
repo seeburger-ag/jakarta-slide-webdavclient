@@ -1,9 +1,9 @@
 // $ANTLR 2.7.3: "Client.g" -> "ClientLexer.java"$
 
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/ClientLexer.java,v 1.1.2.3 2004/04/01 08:38:02 ozeigermann Exp $
- * $Revision: 1.1.2.3 $
- * $Date: 2004/04/01 08:38:02 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/ClientLexer.java,v 1.9 2004/08/02 15:45:51 unico Exp $
+ * $Revision: 1.9 $
+ * $Date: 2004/08/02 15:45:51 $
  *
  * ====================================================================
  *
@@ -27,8 +27,8 @@ package org.apache.webdav.cmd;
 
 import java.io.*;
 import java.util.*;
-import org.apache.util.QName;
 import org.apache.webdav.lib.PropertyName;
+import org.apache.webdav.lib.util.QName;
 
 
 import java.io.InputStream;
@@ -58,8 +58,7 @@ import antlr.SemanticException;
 /**
  * The Slide WebDAV client scanner.
  *
- * @version     $Revision: 1.1.2.3 $ $Date: 2004/04/01 08:38:02 $
- * @author      Dirk Verbeeck 
+ * @version     $Revision: 1.9 $ $Date: 2004/08/02 15:45:51 $
  */
 public class ClientLexer extends antlr.CharScanner implements SlideTokenTypes, TokenStream
  {
@@ -77,70 +76,73 @@ public ClientLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = false;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("propfind", this), new Integer(37));
-	literals.put(new ANTLRHashString("mkws", this), new Integer(64));
-	literals.put(new ANTLRHashString("unlock", this), new Integer(47));
-	literals.put(new ANTLRHashString("to", this), new Integer(50));
-	literals.put(new ANTLRHashString("principalcollectionset", this), new Integer(55));
-	literals.put(new ANTLRHashString("checkin", this), new Integer(58));
-	literals.put(new ANTLRHashString("get", this), new Integer(44));
-	literals.put(new ANTLRHashString("mv", this), new Integer(71));
-	literals.put(new ANTLRHashString("exit", this), new Integer(65));
-	literals.put(new ANTLRHashString("open", this), new Integer(17));
-	literals.put(new ANTLRHashString("mkcol", this), new Integer(30));
-	literals.put(new ANTLRHashString("lls", this), new Integer(25));
-	literals.put(new ANTLRHashString("dir", this), new Integer(29));
-	literals.put(new ANTLRHashString("lock", this), new Integer(46));
-	literals.put(new ANTLRHashString("connect", this), new Integer(16));
-	literals.put(new ANTLRHashString("locks", this), new Integer(48));
-	literals.put(new ANTLRHashString("copy", this), new Integer(33));
-	literals.put(new ANTLRHashString("acl", this), new Integer(54));
-	literals.put(new ANTLRHashString("del", this), new Integer(35));
-	literals.put(new ANTLRHashString("checkout", this), new Integer(59));
-	literals.put(new ANTLRHashString("propput", this), new Integer(72));
-	literals.put(new ANTLRHashString("cd", this), new Integer(23));
-	literals.put(new ANTLRHashString("on", this), new Integer(13));
-	literals.put(new ANTLRHashString("pwd", this), new Integer(21));
-	literals.put(new ANTLRHashString("mkdir", this), new Integer(31));
-	literals.put(new ANTLRHashString("disconnect", this), new Integer(18));
-	literals.put(new ANTLRHashString("move", this), new Integer(32));
-	literals.put(new ANTLRHashString("cp", this), new Integer(70));
-	literals.put(new ANTLRHashString("set", this), new Integer(68));
-	literals.put(new ANTLRHashString("echo", this), new Integer(12));
-	literals.put(new ANTLRHashString("rm", this), new Integer(36));
-	literals.put(new ANTLRHashString("report", this), new Integer(61));
-	literals.put(new ANTLRHashString("debug", this), new Integer(14));
 	literals.put(new ANTLRHashString("spool", this), new Integer(8));
-	literals.put(new ANTLRHashString("cc", this), new Integer(24));
-	literals.put(new ANTLRHashString("pwc", this), new Integer(20));
-	literals.put(new ANTLRHashString("off", this), new Integer(10));
-	literals.put(new ANTLRHashString("versioncontrol", this), new Integer(56));
-	literals.put(new ANTLRHashString("grant", this), new Integer(49));
-	literals.put(new ANTLRHashString("ldir", this), new Integer(26));
-	literals.put(new ANTLRHashString("propget", this), new Integer(38));
-	literals.put(new ANTLRHashString("help", this), new Integer(4));
-	literals.put(new ANTLRHashString("options", this), new Integer(15));
-	literals.put(new ANTLRHashString("ls", this), new Integer(28));
-	literals.put(new ANTLRHashString("status", this), new Integer(7));
-	literals.put(new ANTLRHashString("propfindall", this), new Integer(40));
-	literals.put(new ANTLRHashString("ereport", this), new Integer(62));
-	literals.put(new ANTLRHashString("close", this), new Integer(69));
-	literals.put(new ANTLRHashString("from", this), new Integer(53));
-	literals.put(new ANTLRHashString("principalcol", this), new Integer(73));
-	literals.put(new ANTLRHashString("lpwd", this), new Integer(19));
-	literals.put(new ANTLRHashString("bye", this), new Integer(67));
-	literals.put(new ANTLRHashString("quit", this), new Integer(66));
+	literals.put(new ANTLRHashString("copy", this), new Integer(33));
+	literals.put(new ANTLRHashString("mkdir", this), new Integer(31));
+	literals.put(new ANTLRHashString("uncheckout", this), new Integer(63));
 	literals.put(new ANTLRHashString("delete", this), new Integer(34));
-	literals.put(new ANTLRHashString("put", this), new Integer(45));
-	literals.put(new ANTLRHashString("deny", this), new Integer(51));
-	literals.put(new ANTLRHashString("propgetall", this), new Integer(41));
-	literals.put(new ANTLRHashString("run", this), new Integer(11));
-	literals.put(new ANTLRHashString("uncheckout", this), new Integer(60));
+	literals.put(new ANTLRHashString("abort", this), new Integer(48));
+	literals.put(new ANTLRHashString("grant", this), new Integer(52));
+	literals.put(new ANTLRHashString("off", this), new Integer(10));
+	literals.put(new ANTLRHashString("acl", this), new Integer(57));
+	literals.put(new ANTLRHashString("help", this), new Integer(4));
 	literals.put(new ANTLRHashString("lcd", this), new Integer(22));
-	literals.put(new ANTLRHashString("update", this), new Integer(57));
+	literals.put(new ANTLRHashString("ldir", this), new Integer(26));
+	literals.put(new ANTLRHashString("mv", this), new Integer(74));
+	literals.put(new ANTLRHashString("lock", this), new Integer(49));
+	literals.put(new ANTLRHashString("to", this), new Integer(53));
+	literals.put(new ANTLRHashString("versioncontrol", this), new Integer(59));
+	literals.put(new ANTLRHashString("mkws", this), new Integer(67));
+	literals.put(new ANTLRHashString("mkcol", this), new Integer(30));
+	literals.put(new ANTLRHashString("from", this), new Integer(56));
+	literals.put(new ANTLRHashString("dir", this), new Integer(29));
+	literals.put(new ANTLRHashString("propfind", this), new Integer(37));
+	literals.put(new ANTLRHashString("checkin", this), new Integer(61));
+	literals.put(new ANTLRHashString("quit", this), new Integer(69));
+	literals.put(new ANTLRHashString("open", this), new Integer(17));
+	literals.put(new ANTLRHashString("locks", this), new Integer(51));
+	literals.put(new ANTLRHashString("status", this), new Integer(7));
+	literals.put(new ANTLRHashString("exit", this), new Integer(68));
+	literals.put(new ANTLRHashString("unlock", this), new Integer(50));
+	literals.put(new ANTLRHashString("rm", this), new Integer(36));
+	literals.put(new ANTLRHashString("set", this), new Integer(71));
+	literals.put(new ANTLRHashString("lls", this), new Integer(25));
 	literals.put(new ANTLRHashString("proppatch", this), new Integer(42));
-	literals.put(new ANTLRHashString("lreport", this), new Integer(63));
-	literals.put(new ANTLRHashString("revoke", this), new Integer(52));
+	literals.put(new ANTLRHashString("propput", this), new Integer(75));
+	literals.put(new ANTLRHashString("commit", this), new Integer(47));
+	literals.put(new ANTLRHashString("propgetall", this), new Integer(41));
+	literals.put(new ANTLRHashString("close", this), new Integer(72));
+	literals.put(new ANTLRHashString("principalcollectionset", this), new Integer(58));
+	literals.put(new ANTLRHashString("run", this), new Integer(11));
+	literals.put(new ANTLRHashString("deny", this), new Integer(54));
+	literals.put(new ANTLRHashString("report", this), new Integer(64));
+	literals.put(new ANTLRHashString("put", this), new Integer(45));
+	literals.put(new ANTLRHashString("connect", this), new Integer(16));
+	literals.put(new ANTLRHashString("propget", this), new Integer(38));
+	literals.put(new ANTLRHashString("revoke", this), new Integer(55));
+	literals.put(new ANTLRHashString("echo", this), new Integer(12));
+	literals.put(new ANTLRHashString("disconnect", this), new Integer(18));
+	literals.put(new ANTLRHashString("debug", this), new Integer(14));
+	literals.put(new ANTLRHashString("move", this), new Integer(32));
+	literals.put(new ANTLRHashString("bye", this), new Integer(70));
+	literals.put(new ANTLRHashString("cd", this), new Integer(23));
+	literals.put(new ANTLRHashString("cp", this), new Integer(73));
+	literals.put(new ANTLRHashString("propfindall", this), new Integer(40));
+	literals.put(new ANTLRHashString("del", this), new Integer(35));
+	literals.put(new ANTLRHashString("get", this), new Integer(44));
+	literals.put(new ANTLRHashString("lpwd", this), new Integer(19));
+	literals.put(new ANTLRHashString("cc", this), new Integer(24));
+	literals.put(new ANTLRHashString("on", this), new Integer(13));
+	literals.put(new ANTLRHashString("options", this), new Integer(15));
+	literals.put(new ANTLRHashString("begin", this), new Integer(46));
+	literals.put(new ANTLRHashString("ereport", this), new Integer(65));
+	literals.put(new ANTLRHashString("pwd", this), new Integer(21));
+	literals.put(new ANTLRHashString("principalcol", this), new Integer(76));
+	literals.put(new ANTLRHashString("update", this), new Integer(60));
+	literals.put(new ANTLRHashString("checkout", this), new Integer(62));
+	literals.put(new ANTLRHashString("lreport", this), new Integer(66));
+	literals.put(new ANTLRHashString("ls", this), new Integer(28));
+	literals.put(new ANTLRHashString("pwc", this), new Integer(20));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -183,13 +185,13 @@ tryAgain:
 				case 'O':  case 'P':  case 'Q':  case 'R':
 				case 'S':  case 'T':  case 'U':  case 'V':
 				case 'W':  case 'X':  case 'Y':  case 'Z':
-				case 'a':  case 'b':  case 'c':  case 'd':
-				case 'e':  case 'f':  case 'g':  case 'h':
-				case 'i':  case 'j':  case 'k':  case 'l':
-				case 'm':  case 'n':  case 'o':  case 'p':
-				case 'q':  case 'r':  case 's':  case 't':
-				case 'u':  case 'v':  case 'w':  case 'x':
-				case 'y':  case 'z':
+				case '\\':  case '_':  case 'a':  case 'b':
+				case 'c':  case 'd':  case 'e':  case 'f':
+				case 'g':  case 'h':  case 'i':  case 'j':
+				case 'k':  case 'l':  case 'm':  case 'n':
+				case 'o':  case 'p':  case 'q':  case 'r':
+				case 's':  case 't':  case 'u':  case 'v':
+				case 'w':  case 'x':  case 'y':  case 'z':
 				{
 					mSTRING(true);
 					theRetToken=_returnToken;
@@ -299,17 +301,17 @@ tryAgain:
 		
 		match('-');
 		{
-		int _cnt103=0;
-		_loop103:
+		int _cnt112=0;
+		_loop112:
 		do {
 			if ((_tokenSet_0.member(LA(1)))) {
 				mCHARS(false);
 			}
 			else {
-				if ( _cnt103>=1 ) { break _loop103; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt112>=1 ) { break _loop112; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt103++;
+			_cnt112++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -409,6 +411,16 @@ tryAgain:
 			match('+');
 			break;
 		}
+		case '\\':
+		{
+			match('\\');
+			break;
+		}
+		case '_':
+		{
+			match('_');
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
@@ -426,6 +438,7 @@ tryAgain:
 		_ttype = STRING;
 		int _saveIndex;
 		
+		{
 		switch ( LA(1)) {
 		case '!':  case '#':  case '$':  case '%':
 		case '&':  case '(':  case ')':  case '+':
@@ -438,18 +451,18 @@ tryAgain:
 		case 'L':  case 'M':  case 'N':  case 'O':
 		case 'P':  case 'Q':  case 'R':  case 'S':
 		case 'T':  case 'U':  case 'V':  case 'W':
-		case 'X':  case 'Y':  case 'Z':  case 'a':
-		case 'b':  case 'c':  case 'd':  case 'e':
-		case 'f':  case 'g':  case 'h':  case 'i':
-		case 'j':  case 'k':  case 'l':  case 'm':
-		case 'n':  case 'o':  case 'p':  case 'q':
-		case 'r':  case 's':  case 't':  case 'u':
-		case 'v':  case 'w':  case 'x':  case 'y':
-		case 'z':
+		case 'X':  case 'Y':  case 'Z':  case '\\':
+		case '_':  case 'a':  case 'b':  case 'c':
+		case 'd':  case 'e':  case 'f':  case 'g':
+		case 'h':  case 'i':  case 'j':  case 'k':
+		case 'l':  case 'm':  case 'n':  case 'o':
+		case 'p':  case 'q':  case 'r':  case 's':
+		case 't':  case 'u':  case 'v':  case 'w':
+		case 'x':  case 'y':  case 'z':
 		{
 			mCHARS(false);
 			{
-			_loop106:
+			_loop116:
 			do {
 				switch ( LA(1)) {
 				case '!':  case '#':  case '$':  case '%':
@@ -463,14 +476,14 @@ tryAgain:
 				case 'L':  case 'M':  case 'N':  case 'O':
 				case 'P':  case 'Q':  case 'R':  case 'S':
 				case 'T':  case 'U':  case 'V':  case 'W':
-				case 'X':  case 'Y':  case 'Z':  case 'a':
-				case 'b':  case 'c':  case 'd':  case 'e':
-				case 'f':  case 'g':  case 'h':  case 'i':
-				case 'j':  case 'k':  case 'l':  case 'm':
-				case 'n':  case 'o':  case 'p':  case 'q':
-				case 'r':  case 's':  case 't':  case 'u':
-				case 'v':  case 'w':  case 'x':  case 'y':
-				case 'z':
+				case 'X':  case 'Y':  case 'Z':  case '\\':
+				case '_':  case 'a':  case 'b':  case 'c':
+				case 'd':  case 'e':  case 'f':  case 'g':
+				case 'h':  case 'i':  case 'j':  case 'k':
+				case 'l':  case 'm':  case 'n':  case 'o':
+				case 'p':  case 'q':  case 'r':  case 's':
+				case 't':  case 'u':  case 'v':  case 'w':
+				case 'x':  case 'y':  case 'z':
 				{
 					mCHARS(false);
 					break;
@@ -482,7 +495,7 @@ tryAgain:
 				}
 				default:
 				{
-					break _loop106;
+					break _loop116;
 				}
 				}
 			} while (true);
@@ -495,13 +508,13 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop108:
+			_loop118:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					matchNot('"');
 				}
 				else {
-					break _loop108;
+					break _loop118;
 				}
 				
 			} while (true);
@@ -516,6 +529,11 @@ tryAgain:
 			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
 		}
 		}
+		}
+		String txt = new String(text.getBuffer(),_begin,text.length()-_begin);
+		txt = txt.replace('\\', '/');
+		text.setLength(_begin); text.append(txt);
+		
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -678,7 +696,7 @@ tryAgain:
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[1025];
 		data[0]=576403002173161472L;
-		data[1]=576460743847706622L;
+		data[1]=576460746263625726L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());

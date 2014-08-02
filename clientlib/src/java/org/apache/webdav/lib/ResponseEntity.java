@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/ResponseEntity.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/ResponseEntity.java,v 1.3 2004/07/28 09:31:39 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:31:39 $
  *
  * ====================================================================
  *
@@ -31,8 +31,7 @@ import java.util.Enumeration;
  * The interface for the response entity body formats that provide
  * operations for the XML response documents.
  *
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
- * @version $Revision: 1.1.2.1 $ $Date: 2004/02/05 15:51:21 $
+ * @version $Revision: 1.3 $ $Date: 2004/07/28 09:31:39 $
  */
 
 public interface ResponseEntity {

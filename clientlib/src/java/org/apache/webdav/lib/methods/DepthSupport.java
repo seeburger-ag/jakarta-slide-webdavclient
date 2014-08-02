@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/DepthSupport.java,v 1.1.2.1 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/DepthSupport.java,v 1.3 2004/07/28 09:30:47 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:30:47 $
  *
  * ====================================================================
  *
@@ -33,7 +33,6 @@ package org.apache.webdav.lib.methods;
  * <li>the collection, its contents and all subcollections (depth infinity).
  * </ol>
  *
- * @author <a href="mailto:bcholmes@interlog.com">B.C. Holmes</a>
  */
 public interface DepthSupport {
 

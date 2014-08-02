@@ -1,11 +1,11 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java,v 1.2.2.3 2004/04/09 15:45:47 ib Exp $
- * $Revision: 1.2.2.3 $
- * $Date: 2004/04/09 15:45:47 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java,v 1.14.2.2 2004/11/17 14:00:44 luetzkendorf Exp $
+ * $Revision: 1.14.2.2 $
+ * $Date: 2004/11/17 14:00:44 $
  *
  * ====================================================================
  *
- * Copyright 1999-2002 The Apache Software Foundation 
+ * Copyright 1999-2002 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,44 +30,48 @@ import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.util.DOMUtils;
-import org.apache.util.DOMWriter;
-import org.apache.util.WebdavStatus;
-import org.apache.webdav.lib.BaseProperty;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
+
 import org.apache.webdav.lib.Property;
 import org.apache.webdav.lib.ResponseEntity;
-import org.apache.webdav.lib.properties.AclProperty;
-import org.apache.webdav.lib.properties.CurrentUserPrivilegeSetProperty;
-import org.apache.webdav.lib.properties.GetLastModifiedProperty;
-import org.apache.webdav.lib.properties.LockDiscoveryProperty;
-import org.apache.webdav.lib.properties.OwnerProperty;
-import org.apache.webdav.lib.properties.PrincipalCollectionSetProperty;
-import org.apache.webdav.lib.properties.ResourceTypeProperty;
-import org.apache.webdav.lib.properties.SupportedLockProperty;
+import org.apache.webdav.lib.properties.PropertyFactory;
+import org.apache.webdav.lib.util.DOMUtils;
+import org.apache.webdav.lib.util.DOMWriter;
+import org.apache.webdav.lib.util.WebdavStatus;
+import org.apache.webdav.lib.util.XMLDebugOutputer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Utility class for XML response parsing.
  *
- * @author B.C. Holmes
- * @author Remy Maucherat
- * @author Dirk Verbeeck
  */
 public abstract class XMLResponseMethodBase
     extends HttpRequestBodyMethodBase {
 
     //static private final Log log = LogSource.getInstance(XMLResponseMethodBase.class.getName());
+    
+    
+    // debug level 
+    private int debug = 0;
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -87,10 +91,16 @@ public abstract class XMLResponseMethodBase
      */
     public XMLResponseMethodBase(String uri) {
         super(uri);
+        
     }
 
 
     // ----------------------------------------------------- Instance Variables
+    
+    /**
+     * XML Debug Outputer
+     */
+    private XMLDebugOutputer xo = new XMLDebugOutputer();
 
 
     /**
@@ -117,6 +127,7 @@ public abstract class XMLResponseMethodBase
      */
     protected Vector responseURLs = null;
 
+    protected String decodeResponseHrefs = null;
 
     // ------------------------------------------------------------- Properties
 
@@ -141,10 +152,6 @@ public abstract class XMLResponseMethodBase
         return getResponseHashtable().elements();
     }
 
-    /*protected HttpState getState() {
-        return state;
-    }*/
-
 
     // --------------------------------------------------- WebdavMethod Methods
 
@@ -152,14 +159,31 @@ public abstract class XMLResponseMethodBase
      * Debug property setter.
      *
      * @param int Debug
-     */
-/*
+     */ 
     public void setDebug(int debug) {
-        super.setDebug(debug);
-        log.setLevel(debug);
+        this.debug = debug;
+        
+        xo.setDebug((debug > 0));
     }
-*/
+    
+	/**
+	 * Debug property getter.
+	 *
+	 */ 
+	public int getDebug() {
+		return this.debug;
+	}
 
+	/**
+	 * Sets whether the href in responses are decoded, as early as possible.
+	 * The <code>href</code> data in responses is often url-encoded, but not 
+	 * alwyas in a comparable way. Set this to a non-null value to decode the 
+	 * hrefs as early as possible.
+	 * @param encoding The encoding used in while decoding (UTF-8 is recommended)
+	 */
+	public void setDecodeResponseHrefs(String encoding) {
+	    this.decodeResponseHrefs = encoding;
+	}
 
     /**
      * Reset the State of the class to its initial state, so that it can be
@@ -206,10 +230,36 @@ public abstract class XMLResponseMethodBase
                 contents = "";
 
             setRequestBody(contents);
+            
+
+            if (debug > 0) {
+                System.out.println("\n>>>>>>>  to  server  ---------------------------------------------------");
+				System.out.println(getName() + " " +
+				   getPath() + (getQueryString() != null ? "?" + getQueryString() : "") + " " + "HTTP/1.1");
+        
+				   Header[] headers = getRequestHeaders();
+				   for (int i = 0; i < headers.length; i++) {
+					   Header header = headers[i];
+					   System.out.print(header.toString());
+				   }
+				System.out.println("Content-Length: "+super.getRequestContentLength());
+				   
+				if (this instanceof DepthSupport) {
+					System.out.println("Depth: "+((DepthSupport)this).getDepth());
+				}
+
+                System.out.println();
+                xo.print(contents);
+                System.out.println("------------------------------------------------------------------------");
+            }
+
         }
 
         return super.getRequestContentLength();
     }
+
+
+
 
     /**
      * DAV requests that contain a body must override this function to
@@ -270,6 +320,7 @@ public abstract class XMLResponseMethodBase
 
         if (builder == null) {
             try {
+                // TODO: avoid the newInstance call for each method instance for performance reasons.
                 DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -282,7 +333,26 @@ public abstract class XMLResponseMethodBase
 
         try {
 
+            // avoid ugly printlns from the default error handler.
+            builder.setErrorHandler(new DummyErrorHandler());
             responseDocument = builder.parse(new InputSource(input));
+            
+            if (debug > 0) {
+               System.out.println("\n<<<<<<< from server  ---------------------------------------------------");
+               System.out.println(getStatusLine());
+               
+               Header[] headers = getResponseHeaders();
+               for (int i = 0; i < headers.length; i++) {
+                  Header header = headers[i];
+                  System.out.print(header.toString());
+               }
+               
+               System.out.println();
+               
+               xo.print(responseDocument);
+               System.out.println("------------------------------------------------------------------------");
+            }
+
 
         } catch (Exception e) {
             throw new IOException
@@ -322,7 +392,7 @@ public abstract class XMLResponseMethodBase
             responseHashtable = new Hashtable();
             responseURLs = new Vector();
             int status = getStatusLine().getStatusCode();
-
+           
             // Also accept OK sent by buggy servers in reply to a PROPFIND
             // or REPORT (Xythos, Catacomb, ...?).
             if (status == WebdavStatus.SC_MULTI_STATUS
@@ -330,9 +400,15 @@ public abstract class XMLResponseMethodBase
                     || this instanceof ReportMethod)
                     && status == HttpStatus.SC_OK) {
 
-                Element multistatus =
-                    getResponseDocument().getDocumentElement();
-                NodeList list = multistatus.getChildNodes();
+
+                Document rdoc = getResponseDocument();
+
+                NodeList list = null;
+                if (rdoc != null) {
+                    Element multistatus = getResponseDocument().getDocumentElement();
+                    list = multistatus.getChildNodes();
+                }
+
                 if (list != null) {
                     for (int i = 0; i < list.getLength(); i++) {
                         try {
@@ -344,12 +420,9 @@ public abstract class XMLResponseMethodBase
                                 "DAV:".equals(namespace)) {
                                 Response response =
                                     new ResponseWithinMultistatus(child);
-                                responseHashtable.put(response.getHref(),
-                                                      response);
-                                responseURLs.add(response.getHref());
-                                /*if (debug>10)
-                                    System.out.println(response); */
-                                //log.debug(response);
+                                String href = getHref(response);
+                                responseHashtable.put(href,response);
+                                responseURLs.add(href);
                             }
                         } catch (ClassCastException e) {
                         }
@@ -358,13 +431,26 @@ public abstract class XMLResponseMethodBase
             } else if (responseDocument != null) {
                 Response response = new SingleResponse(responseDocument,
                     getPath(), status);
-                responseHashtable.put(response.getHref(), response);
-                responseURLs.add(response.getHref());
-                /*if (debug>10)
-                    System.out.println(response); */
-                //log.debug(response);
+                String href = getHref(response);
+                responseHashtable.put(href, response);
+                responseURLs.add(href);
             }
         }
+    }
+
+
+    private String getHref(Response response) {
+        String href = response.getHref();
+        if (this.decodeResponseHrefs != null) {
+            try {
+                href = URIUtil.decode(href, this.decodeResponseHrefs);
+            }
+            catch (URIException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        }
+        return href;
     }
 
 
@@ -377,40 +463,8 @@ public abstract class XMLResponseMethodBase
     protected static Property convertElementToProperty(
         Response response, Element element) {
 
-        Property property = null;
-        String namespace = DOMUtils.getElementNamespaceURI(element);
-
-        // handle DAV properties specially
-        if (namespace != null && namespace.equals("DAV:")) {
-
-            String localName = DOMUtils.getElementLocalName(element);
-
-            if (ResourceTypeProperty.TAG_NAME.equals(localName)) {
-                property = new ResourceTypeProperty(response, element);
-            } else if (GetLastModifiedProperty.TAG_NAME.equals(localName)) {
-                property = new GetLastModifiedProperty(response, element);
-            } else if (CurrentUserPrivilegeSetProperty.TAG_NAME.equals
-                       (localName)) {
-                property =
-                    new CurrentUserPrivilegeSetProperty(response, element);
-            } else if (LockDiscoveryProperty.TAG_NAME.equals(localName)) {
-                property = new LockDiscoveryProperty(response, element);
-            } else if (SupportedLockProperty.TAG_NAME.equals(localName)) {
-                property = new SupportedLockProperty(response, element);
-            } else if (AclProperty.TAG_NAME.equals(localName)) {
-                property = new AclProperty(response, element);
-            } else if (PrincipalCollectionSetProperty.TAG_NAME.equals(localName)) {
-                property = new PrincipalCollectionSetProperty(response, element);
-            } else if (OwnerProperty.TAG_NAME.equals(localName)) {
-                property = new OwnerProperty(response, element);
-            }
-        }
-
-        if (property == null) {
-            property = new BaseProperty(response, element);
-        }
-
-        return property;
+        return PropertyFactory.create(response, element);
+        
     }
 
 
@@ -614,5 +668,97 @@ public abstract class XMLResponseMethodBase
         protected void setResponseHashtable(Hashtable h){
             responseHashtable = h;
         }
+
+
+
+
+private static class DummyErrorHandler implements ErrorHandler {
+
+
+    /**
+     * Receive notification of a warning.
+     *
+     * <p>SAX parsers will use this method to report conditions that
+     * are not errors or fatal errors as defined by the XML 1.0
+     * recommendation.  The default behaviour is to take no action.</p>
+     *
+     * <p>The SAX parser must continue to provide normal parsing events
+     * after invoking this method: it should still be possible for the
+     * application to process the document through to the end.</p>
+     *
+     * <p>Filters may use this method to report other, non-XML warnings
+     * as well.</p>
+     *
+     * @param exception The warning information encapsulated in a
+     *                  SAX parse exception.
+     * @exception org.xml.sax.SAXException Any SAX exception, possibly
+     *            wrapping another exception.
+     * @see org.xml.sax.SAXParseException
+     */
+    public void warning(SAXParseException exception) throws SAXException
+    {
+        // System.out.println("warning: " + exception.getMessage());
+    }
+
+    /**
+     * Receive notification of a recoverable error.
+     *
+     * <p>This corresponds to the definition of "error" in section 1.2
+     * of the W3C XML 1.0 Recommendation.  For example, a validating
+     * parser would use this callback to report the violation of a
+     * validity constraint.  The default behaviour is to take no
+     * action.</p>
+     *
+     * <p>The SAX parser must continue to provide normal parsing events
+     * after invoking this method: it should still be possible for the
+     * application to process the document through to the end.  If the
+     * application cannot do so, then the parser should report a fatal
+     * error even if the XML 1.0 recommendation does not require it to
+     * do so.</p>
+     *
+     * <p>Filters may use this method to report other, non-XML errors
+     * as well.</p>
+     *
+     * @param exception The error information encapsulated in a
+     *                  SAX parse exception.
+     * @exception org.xml.sax.SAXException Any SAX exception, possibly
+     *            wrapping another exception.
+     * @see org.xml.sax.SAXParseException
+     */
+    public void error(SAXParseException exception) throws SAXException
+    {
+        // System.out.println("error: " + exception.getMessage());
+    }
+
+    /**
+     * Receive notification of a non-recoverable error.
+     *
+     * <p>This corresponds to the definition of "fatal error" in
+     * section 1.2 of the W3C XML 1.0 Recommendation.  For example, a
+     * parser would use this callback to report the violation of a
+     * well-formedness constraint.</p>
+     *
+     * <p>The application must assume that the document is unusable
+     * after the parser has invoked this method, and should continue
+     * (if at all) only for the sake of collecting addition error
+     * messages: in fact, SAX parsers are free to stop reporting any
+     * other events once this method has been invoked.</p>
+     *
+     * @param exception The error information encapsulated in a
+     *                  SAX parse exception.
+     * @exception org.xml.sax.SAXException Any SAX exception, possibly
+     *            wrapping another exception.
+     * @see org.xml.sax.SAXParseException
+     */
+    public void fatalError(SAXParseException exception) throws SAXException
+    {
+         // System.out.println("fatal: " + exception.getMessage());
+    }
+
+}
+
+
+
+
 }
 

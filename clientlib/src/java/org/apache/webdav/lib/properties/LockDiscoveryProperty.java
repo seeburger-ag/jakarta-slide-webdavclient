@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/LockDiscoveryProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/LockDiscoveryProperty.java,v 1.4.2.1 2004/10/11 08:17:20 luetzkendorf Exp $
+ * $Revision: 1.4.2.1 $
+ * $Date: 2004/10/11 08:17:20 $
  *
  * ====================================================================
  *
@@ -23,11 +23,11 @@
 package org.apache.webdav.lib.properties;
 
 import java.util.ArrayList;
-import org.apache.util.DOMUtils;
 import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.Lock;
 import org.apache.webdav.lib.ResponseEntity;
 import org.apache.webdav.lib.methods.DepthSupport;
+import org.apache.webdav.lib.util.DOMUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -40,11 +40,7 @@ import org.w3c.dom.NodeList;
  *
  * <!ELEMENT lockdiscovery (activelock)* >
  *
- * @author Jojada J. Tirtowidjojo at SpeedLegal Holdings Inc.
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
- * @author Remy Maucherat
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.4.2.1 $
  */
 public class LockDiscoveryProperty extends BaseProperty {
 
@@ -124,10 +120,14 @@ public class LockDiscoveryProperty extends BaseProperty {
         int lt = -1;
         child = DOMUtils.getFirstElement(element, "DAV:", "locktype");
         if (child != null) {
-            Element lockType =
-                DOMUtils.getFirstElement(child, "DAV:", "write");
+            Element lockType = DOMUtils.getFirstElement(child, "DAV:", "write");
             if (lockType != null) {
                 lt = Lock.TYPE_WRITE;
+            } else {
+                lockType = DOMUtils.getFirstElement(child, "DAV:", "transaction");
+                if (lockType != null) {
+                    lt = Lock.TYPE_TRANSACTION;
+                }
             }
         }
 
@@ -180,8 +180,17 @@ public class LockDiscoveryProperty extends BaseProperty {
                 lockToken = DOMUtils.getTextValue(href);
             }
         }
+        
+        String principalUrl = null;
+        child = DOMUtils.getFirstElement(element, "DAV:", "principal-URL");
+        if (child != null) {
+            Element href = DOMUtils.getFirstElement(child, "DAV:", "href");
+            if (href != null) {
+                principalUrl = DOMUtils.getTextValue(href);
+            }
+        } 
 
-        return new Lock(ls, lt, d, owner, t, lockToken);
+        return new Lock(ls, lt, d, owner, t, lockToken, principalUrl);
 
     }
 

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Ace.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Ace.java,v 1.4.2.1 2004/11/23 12:57:16 unico Exp $
+ * $Revision: 1.4.2.1 $
+ * $Date: 2004/11/23 12:57:16 $
  *
  * ====================================================================
  *
@@ -29,9 +29,7 @@ import java.util.Vector;
 /**
  * This interface models a DAV Access control entry.
  *
- * @author Remy Maucherat
- * @author Dirk Verbeeck
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.4.2.1 $
  */
 public class Ace {
     private static final PropertyName DEFAULT_PROPERTY
@@ -238,6 +236,49 @@ public class Ace {
         privileges.clear();
     }
 
+    public int hashCode() {
+        return toString().hashCode() 
+            + (getPrincipal().equals("property") 
+                    ? getProperty().hashCode() 
+                    : 0);
+    }
+
+    public boolean equals(Object o) {
+        if (o != null && o instanceof Ace) {
+            Ace otherAce = (Ace) o;
+            boolean equals = true;
+            equals &= isNegative() == otherAce.isNegative();
+            equals &= isProtected() == otherAce.isProtected();
+            equals &= isInherited() == otherAce.isInherited();
+            if (equals && isInherited()) {
+                equals = getInheritedFrom().equals(otherAce.getInheritedFrom());
+            }
+            equals &= getPrincipal().equals(otherAce.getPrincipal());
+            if (equals && getPrincipal().equals("property")) {
+                equals = getProperty().equals(otherAce.getProperty());
+            }
+            if (equals) {
+                Enumeration privileges = enumeratePrivileges();
+                Enumeration otherPrivileges = otherAce.enumeratePrivileges();
+                while (equals && privileges.hasMoreElements()) {
+                    equals = otherPrivileges.hasMoreElements();
+                    // Only access otherPrivileges if there are more elements
+                    if (equals)
+                    {
+                        equals = privileges.nextElement().equals(otherPrivileges.nextElement());
+                    }
+                }
+                if (equals)
+                {
+                    // No more elements in privileges, so there should be no
+                    // more elements in otherPrivileges
+                    equals = !otherPrivileges.hasMoreElements();
+                }
+            }
+            return equals;
+        }
+        return false;
+    }
 
     public String toString() {
         return ((!isNegative()?"granted":"denied") +

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavResources.java,v 1.2.2.2 2004/03/16 13:49:38 mholz Exp $
- * $Revision: 1.2.2.2 $
- * $Date: 2004/03/16 13:49:38 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavResources.java,v 1.5 2004/07/28 09:31:38 ib Exp $
+ * $Revision: 1.5 $
+ * $Date: 2004/07/28 09:31:38 $
  *
  * ====================================================================
  *
@@ -31,7 +31,6 @@ import java.util.Hashtable;
  * Two WebdavResource instances are considered equal, if there {@link WebdavResource#getName()
  * getName()} method returns the same string.
  *
- * @author <a href="mailto:jericho@thinkfree.com">Park, Sung-Gu</a>
  */
 
 public class WebdavResources {

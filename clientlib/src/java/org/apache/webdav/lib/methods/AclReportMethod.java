@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/AclReportMethod.java,v 1.1.2.1 2004/02/05 17:20:44 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 17:20:44 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/AclReportMethod.java,v 1.6 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.6 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -28,7 +28,7 @@ import java.util.Collection;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.XMLPrinter;
+import org.apache.webdav.lib.util.XMLPrinter;
 
 /**
  * WebDAV Report method
@@ -36,7 +36,6 @@ import org.apache.util.XMLPrinter;
  * from the ACL specification.
  * In this version only the principal-property-search is supported.
  *
- * @author Martin Dulisch, 07.02.2003
  */
 public class AclReportMethod extends XMLResponseMethodBase implements DepthSupport {
 
@@ -144,6 +143,7 @@ public class AclReportMethod extends XMLResponseMethodBase implements DepthSuppo
      */
     protected String generateRequestBody() {
         XMLPrinter printer = new XMLPrinter();
+
         printer.writeXMLHeader();
 
         switch (reportType) {

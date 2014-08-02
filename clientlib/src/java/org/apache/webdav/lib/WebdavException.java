@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavException.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/WebdavException.java,v 1.3 2004/07/28 09:31:39 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:31:39 $
  *
  * ====================================================================
  *
@@ -27,7 +27,6 @@ package org.apache.webdav.lib;
  * Wraps other Exceptions into RuntimeException. It indicates
  * some server access problems or implementation shortcomings
  *
- * @author Eckard Buchner
  */
 public class WebdavException extends RuntimeException {
 

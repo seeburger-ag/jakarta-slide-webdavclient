@@ -2,7 +2,7 @@
 rem ---------------------------------------------------------------------------
 rem run.bat - Start Script for the Slide Client
 rem
-rem $Id: run.bat,v 1.1.2.2 2004/03/31 09:33:02 ozeigermann Exp $
+rem $Id: run.bat,v 1.3 2004/03/31 09:42:00 ozeigermann Exp $
 rem ---------------------------------------------------------------------------
 
 set _SLIDE_CLIENT_HOME=%SLIDE_CLIENT_HOME%

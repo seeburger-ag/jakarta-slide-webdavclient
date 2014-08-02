@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/CurrentUserPrivilegeSetProperty.java,v 1.1.2.1 2004/02/05 15:51:23 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:23 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/properties/CurrentUserPrivilegeSetProperty.java,v 1.4 2004/08/02 15:45:50 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:50 $
  *
  * ====================================================================
  *
@@ -22,9 +22,9 @@
  */
 package org.apache.webdav.lib.properties;
 
-import org.apache.util.DOMUtils;
 import org.apache.webdav.lib.BaseProperty;
 import org.apache.webdav.lib.ResponseEntity;
+import org.apache.webdav.lib.util.DOMUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -32,7 +32,6 @@ import org.w3c.dom.NodeList;
  * Title:        CurrentUserPrivilegeSetProperty.java
  * Description:
  * Company:      SpeedLegal Holdings Inc.
- * @author       Jojada J. Tirtowidjojo
  * @version 1.0
  */
 

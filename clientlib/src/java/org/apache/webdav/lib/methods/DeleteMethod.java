@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/DeleteMethod.java,v 1.1.2.1 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/DeleteMethod.java,v 1.4 2004/08/02 15:45:48 unico Exp $
+ * $Revision: 1.4 $
+ * $Date: 2004/08/02 15:45:48 $
  *
  * ====================================================================
  *
@@ -28,7 +28,7 @@ import java.io.InputStream;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.WebdavStatus;
+import org.apache.webdav.lib.util.WebdavStatus;
 
 /**
  * DELETE Method.  The delete method can be sent to either a collection or
@@ -63,8 +63,6 @@ import org.apache.util.WebdavStatus;
  * <p>   In this example, the delete failed because one of the members was
  * locked.
  *
- * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @author <a href="mailto:bcholmes@apache.org">B.C. Holmes</a>
  */
 public class DeleteMethod
     extends XMLResponseMethodBase {

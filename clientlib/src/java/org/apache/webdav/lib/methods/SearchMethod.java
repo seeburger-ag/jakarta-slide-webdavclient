@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/SearchMethod.java,v 1.1.2.2 2004/02/05 15:51:22 mholz Exp $
- * $Revision: 1.1.2.2 $
- * $Date: 2004/02/05 15:51:22 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/methods/SearchMethod.java,v 1.5 2004/08/02 15:45:47 unico Exp $
+ * $Revision: 1.5 $
+ * $Date: 2004/08/02 15:45:47 $
  *
  * ====================================================================
  *
@@ -30,7 +30,7 @@ import java.util.Vector;
 import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.util.WebdavStatus;
+import org.apache.webdav.lib.util.WebdavStatus;
 
 /**
  * This class implements the WebDAV SEARCH Method.
@@ -49,20 +49,20 @@ import org.apache.util.WebdavStatus;
  * Content-type: text/xml; charset="utf-8"
  * Content-Length: xxxx
  *
- * <?xml version="1.0"?>
- * <D:searchrequest xmlns:D = "DAV:" >
- * <D:basicsearch>
- *   <D:select>
- *     <D:prop><D:getcontentlength/></D:prop>
- *   </D:select>
- *   <D:from>
- *     <D:scope>
- *       <D:href>/folder/</D:href>
- *       <D:depth>infinity</D:depth>
- *     </D:scope>
- *   </D:from>
- * </D:basicsearch>
- * </D:searchrequest>
+ * &lt;?xml version="1.0"?>
+ * &lt;D:searchrequest xmlns:D = "DAV:" >
+ * &lt;D:basicsearch>
+ *   &lt;D:select>
+ *     &lt;D:prop>&lt;D:getcontentlength/>&lt;/D:prop>
+ *   &lt;/D:select>
+ *   &lt;D:from>
+ *     &lt;D:scope>
+ *       &lt;D:href>/folder/&lt;/D:href>
+ *       &lt;D:depth>infinity&lt;/D:depth>
+ *     &lt;/D:scope>
+ *   &lt;/D:from>
+ * &lt;/D:basicsearch>
+ * &lt;/D:searchrequest>
  * </PRE>
  *
  * <P>     However, other query grammars may be used. A typical request using
@@ -78,18 +78,17 @@ import org.apache.util.WebdavStatus;
  * Content-type: text/xml; charset="utf-8"
  * Content-Length: xxxx
  *
- * <?xml version="1.0"?>
- * <D:searchrequest xmlns:D = "DAV:" >
- *   <D:sql>
+ * &lt;?xml version="1.0"?>
+ * &lt;D:searchrequest xmlns:D = "DAV:" >
+ *   &lt;D:sql>
  *   SELECT "DAV:contentclass", "DAV:displayname"
  *     FROM "/folder/"
  *    WHERE "DAV:ishidden" = false
  *      AND "DAV:isfolder" = false
- *   </D:sql>
- * </D:searchrequest>
+ *   &lt;/D:sql>
+ * &lt;/D:searchrequest>
  * </PRE>
  *
- * @author <a href="mailto:sdodd@agea.com">Shawn C. Dodd</a>
  */
 
 public class SearchMethod extends XMLResponseMethodBase {

@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/BaseProperty.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/BaseProperty.java,v 1.5 2004/08/02 15:45:49 unico Exp $
+ * $Revision: 1.5 $
+ * $Date: 2004/08/02 15:45:49 $
  *
  * ====================================================================
  *
@@ -24,15 +24,19 @@
 package org.apache.webdav.lib;
 
 import java.io.StringWriter;
-import org.apache.util.DOMUtils;
-import org.apache.util.PropertyWriter;
+import java.util.List;
+
+import org.apache.webdav.lib.util.DOMUtils;
+import org.apache.webdav.lib.util.PropertyWriter;
+import org.jdom.input.DOMBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.w3c.dom.Element;
 
 /**
  * This interface models a DAV property.
  *
- * @author Remy Maucherat
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.5 $
  */
 public class BaseProperty implements Property {
 
@@ -112,14 +116,25 @@ public class BaseProperty implements Property {
 
 
     /**
-     * This method returns the namespace of the property.  Thus, for example,
+     * This method returns the value of the property.  Thus, for example,
      * calling this method on a property such as
      * <code>&lt;D:getlastmodified&gt;Tue, 05 Dec 2000
      * 05:25:02&lt;/D:getlastmodified&gt;</code> returns
-     * <code>Tue, 05 Dec 2000 05:25:02</code>.
+     * <code>Tue, 05 Dec 2000 05:25:02</code>.<br/>
+     * Note: Mixed content (text and xml together) will not be returned
+     * accurately.
      */
     public String getPropertyAsString() {
-        return DOMUtils.getTextValue(element);
+    	StringBuffer text = new StringBuffer();
+        DOMBuilder builder = new DOMBuilder();
+        XMLOutputter outputter = new XMLOutputter( Format.getPrettyFormat() );
+        org.jdom.Element e = builder.build( element );
+        List children = e.getChildren();
+        if ( children.size() > 0 ) {
+        	text.append( outputter.outputString( children ) );
+        }
+        text.append( e.getTextTrim() );
+        return text.toString();
     }
 
 

@@ -1,9 +1,9 @@
 header 
 {
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Client.g,v 1.1.2.3 2004/04/01 08:38:02 ozeigermann Exp $
- * $Revision: 1.1.2.3 $
- * $Date: 2004/04/01 08:38:02 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/commandline/src/java/org/apache/webdav/cmd/Client.g,v 1.8 2004/07/05 15:23:55 ozeigermann Exp $
+ * $Revision: 1.8 $
+ * $Date: 2004/07/05 15:23:55 $
  *
  * ====================================================================
  *
@@ -37,7 +37,7 @@ import org.apache.webdav.lib.PropertyName;
 /**
  * The Slide WebDAV client parser.
  *
- * @version     $Revision: 1.1.2.3 $ $Date: 2004/04/01 08:38:02 $
+ * @version     $Revision: 1.8 $ $Date: 2004/07/05 15:23:55 $
  * @author      Dirk Verbeeck 
  */
 class ClientParser extends Parser;
@@ -164,7 +164,7 @@ exception catch [ANTLRException ex] {
     if (ex.toString().indexOf("null") != -1) System.exit(-1);
     // handle parse errors gracefully
     client.print("Error: "+ex.toString());
-}
+     }
 
 command
     :   
@@ -212,6 +212,9 @@ command
     |   checkout
     |   uncheckout
     |   update
+    |   begin
+    |   commit
+    |   abort
     )
     ;
 
@@ -440,7 +443,7 @@ lls
     exception
     catch [RecognitionException ex]
     {
-        printUsage("lls");
+         printUsage("lls");
     }
 
 ls
@@ -615,12 +618,82 @@ put
         printUsage("put");
     }
 
+begin : 
+  BEGIN  (timeout:STRING (owner:STRING)? )? EOL
+  {
+    client.beginTransaction(text(timeout), text(owner));
+  }
+    ;
+    exception
+    catch [RecognitionException ex]
+    {
+        printUsage("begin");
+    }
+
+commit : 
+  COMMIT
+  {
+    client.commitTransaction();
+  }
+    ;
+    exception
+    catch [RecognitionException ex]
+    {
+        printUsage("commit");
+    }
+
+abort : 
+  ABORT
+  {
+    client.abortTransaction();
+  }
+    ;
+    exception
+    catch [RecognitionException ex]
+    {
+        printUsage("abort");
+    }
+
 lock
     :   LOCK
         (path:STRING)?
+        (os1:OPTIONSTRING
+          (os2:OPTIONSTRING
+            (os3:OPTIONSTRING)?
+           )?
+        )?
         EOL
         {
-            client.lock(text(path));
+
+	        String[] opt = {text(os1), text(os2), text(os3), null};
+	        
+	        int parNr[]  = {3, 3, 3};
+	        String err = null;
+	            
+	        for (int i = 0 ; i< opt.length ;i++) {
+	            
+	            if (opt[i] != null) {
+
+	                if ( opt[i].toLowerCase().startsWith("-t")) {
+	                    parNr[0] = i;
+	                } else
+
+	                if ( opt[i].toLowerCase().startsWith("-s")) {
+	                    parNr[1] = i;
+	                } else
+	                
+	                if ( opt[i].toLowerCase().startsWith("-o")) {
+	                    parNr[2] = i;
+	                } else {
+	                    err = "Wrong parameter: "+ opt[i];
+	                }
+	            }
+	        }
+       
+       		if (err == null)
+            	client.lock(text(path), opt[parNr[0]], opt[parNr[1]], opt[parNr[2]]);
+            else
+            	client.print(err); 	
         }
     ;
     exception
@@ -632,9 +705,17 @@ lock
 unlock
     :   UNLOCK
         (path:STRING)?
+        (os:OPTIONSTRING)?
         EOL
         {
-            client.unlock(text(path));
+            String owner = text(os);
+            String err = null;
+        	
+        
+	        if ((owner != null) && (!owner.toLowerCase().startsWith("-o")) ) {
+                err = "Wrong parameter: "+ owner;
+            }
+            client.unlock(text(path), owner);
         }
     ;
     exception
@@ -1020,6 +1101,9 @@ all_tokens
     |   CHECKOUT
     |   UNCHECKOUT
     |   UPDATE
+    |   BEGIN
+    |   COMMIT
+    |   ABORT
     ;
 
 // ----------------------------------------- lexical analyzer class definitions
@@ -1027,7 +1111,7 @@ all_tokens
 /**
  * The Slide WebDAV client scanner.
  *
- * @version     $Revision: 1.1.2.3 $ $Date: 2004/04/01 08:38:02 $
+ * @version     $Revision: 1.8 $ $Date: 2004/07/05 15:23:55 $
  * @author      Dirk Verbeeck 
  */
 class ClientLexer extends Lexer;
@@ -1108,6 +1192,9 @@ tokens {
     CHECKOUT                = "checkout";
     UNCHECKOUT              = "uncheckout";
     UPDATE                  = "update";
+    BEGIN                   = "begin";
+    COMMIT                  = "commit";
+    ABORT                   = "abort";
 }
 
 // ---------------------------------------------------------------- lexer rules
@@ -1131,12 +1218,18 @@ OPTIONSTRING
     : '-' (CHARS)+
     ;
 
-// TODO: make the flexible string like STRING:
-// '"' (~('"'|'\n'|'\r'))* '"' | (~(' '|'\n'|'\r'))+
+
+
+//  Backslashes are accepted by CHARS,
+//  but STRING replace them into slashes !!
 STRING
-    :   CHARS (CHARS | '-')*
-    |   '"'! ( ~'"' )* '"'!
-//    |   '"'! ( options {greedy=false;} : . )* '"'!
+    :   ( CHARS (CHARS | '-')*
+        | '"'! ( ~'"' )* '"'!
+        )
+     { String txt = $getText;
+       txt = txt.replace('\\', '/');
+       $setText(txt);
+     }
     ;
 
 protected        
@@ -1155,6 +1248,8 @@ CHARS
     |   ')'
     |   '!'
     |   '+'
+    |   '\\'
+    |   '_'
     ;
 
 QNAME

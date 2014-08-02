@@ -1,7 +1,7 @@
 /*
- * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Privilege.java,v 1.1.2.1 2004/02/05 15:51:21 mholz Exp $
- * $Revision: 1.1.2.1 $
- * $Date: 2004/02/05 15:51:21 $
+ * $Header: /home/cvs/jakarta-slide/webdavclient/clientlib/src/java/org/apache/webdav/lib/Privilege.java,v 1.3 2004/07/28 09:31:40 ib Exp $
+ * $Revision: 1.3 $
+ * $Date: 2004/07/28 09:31:40 $
  *
  * ====================================================================
  *
@@ -28,8 +28,7 @@ package org.apache.webdav.lib;
 /**
  * This interface models a DAV ACE privilege.
  *
- * @author Remy Maucherat
- * @version $Revision: 1.1.2.1 $
+ * @version $Revision: 1.3 $
  */
 public class Privilege {
 
