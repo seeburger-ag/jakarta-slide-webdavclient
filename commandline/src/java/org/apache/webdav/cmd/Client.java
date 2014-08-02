@@ -368,14 +368,14 @@ final class Client {
             if (param != null) {
                 if (!param.startsWith("/")) {
                     httpURL = uriToHttpURL(param);
-                    Enumeration enum = null;
+                    Enumeration enumer = null;
                     try {
                         // OPTIONS business logic
-                        enum =
+                        enumer =
                             webdavResource.optionsMethod(httpURL);
-                        while (enum.hasMoreElements()) {
-                            out.print(enum.nextElement());
-                            if (enum.hasMoreElements()) {
+                        while (enumer.hasMoreElements()) {
+                            out.print(enumer.nextElement());
+                            if (enumer.hasMoreElements()) {
                                 out.print(", ");
                             } else {
                                 out.println();
@@ -399,13 +399,13 @@ final class Client {
                                     // OPTIONS business logic
                                     httpURL.setUserinfo(userName,
                                         password);
-                                    enum = webdavResource.
+                                    enumer = webdavResource.
                                         optionsMethod(httpURL);
                                     while (
-                                        enum.hasMoreElements()) {
+                                        enumer.hasMoreElements()) {
                                         out.print
-                                            (enum.nextElement());
-                                        if (enum.
+                                            (enumer.nextElement());
+                                        if (enumer.
                                             hasMoreElements()) {
                                             out.print
                                                 (", ");
