@@ -1,0 +1,299 @@
+<project name="Slide-WebDAV-Clientlib" default="all" basedir=".">
+    <!-- =================================================================== -->
+    <!-- Compiler Options                                                    -->
+    <!-- =================================================================== -->
+    <!-- Should Java compilations set the 'debug' compiler option? -->
+    <property name="compile.debug" value="true"/>
+    <!-- Should Java compilations set the 'deprecation' compiler option? -->
+    <property name="compile.deprecation" value="true"/>
+    <!-- Should Java compilations set the 'optimize' compiler option? -->
+    <property name="compile.optimize" value="true"/>
+    <property name="build.compiler" value="classic"/>
+    <!-- =================================================================== -->
+    <!-- Project Properties                                                  -->
+    <!-- =================================================================== -->
+    <property name="name" value="Jakarta-Slide"/>
+    <property name="year" value="2004"/>
+    <property name="version" value="2.0"/>
+    <property name="project" value="jakarta-slide"/>
+    <property name="clientlib.final.name" value="${project}-webdavlib-${version}"/>
+    <property name="cmd.final.name" value="${project}-commandline-${version}"/>
+    <property name="archive.src.name" value="${project}-webdavclient-src-${version}"/>
+    <property name="archive.bin.name" value="${project}-webdavclient-bin-${version}"/>
+    <!-- =================================================================== -->
+    <!-- Build Properties                                                    -->
+    <!-- =================================================================== -->
+    <property name="slide.build" value="./build"/>
+    <property name="clientlib.build" value="${slide.build}/clientlib"/>
+    <property name="cmd.build" value="${slide.build}/commandline"/>
+    <property name="slide.dist" value="./dist"/>
+    <property name="clientlib.dist" value="${slide.dist}"/>
+    <property name="cmd.dist" value="${slide.dist}"/>
+    <property name="clientlib.javadoc.path" value="doc/clientjavadoc"/>
+    <!-- =================================================================== -->
+    <!-- Dependencies Properties                                             -->
+    <!-- =================================================================== -->
+    <property name="commons-httpclient.jar" value="lib/commons-httpclient.jar"/>
+    <property name="antlr.jar" value="lib/antlr.jar"/>
+    <!-- =================================================================== -->
+    <!-- Classpaths                                                          -->
+    <!-- =================================================================== -->
+    <path id="clientlib.classpath">
+        <pathelement location="${commons-httpclient.jar}"/>
+    </path>
+    <path id="cmd.classpath">
+        <pathelement location="${antlr.jar}"/>
+        <pathelement location="${commons-httpclient.jar}"/>
+        <pathelement location="${clientlib.build}/classes"/>
+    </path>
+    <!-- =================================================================== -->
+    <!-- Prepare build                                                       -->
+    <!-- =================================================================== -->
+    <target name="prepare-build" depends="">
+        <mkdir dir="${slide.build}"/>
+        <mkdir dir="${clientlib.build}"/>
+        <mkdir dir="${clientlib.build}/classes"/>
+        <mkdir dir="${clientlib.build}/${clientlib.javadoc.path}"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Prepare commandline build                                           -->
+    <!-- =================================================================== -->
+    <target name="prepare-build-cmd" depends="prepare-build">
+        <mkdir dir="${cmd.build}"/>
+        <mkdir dir="${cmd.build}/classes"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Prepare dist                                                        -->
+    <!-- =================================================================== -->
+    <target name="prepare-dist" depends="">
+        <mkdir dir="${slide.dist}"/>
+        <mkdir dir="${clientlib.dist}"/>
+        <mkdir dir="${clientlib.dist}/lib"/>
+        <mkdir dir="${clientlib.dist}/${clientlib.javadoc.path}"/>
+        <mkdir dir="${slide.dist}/etc"/>
+        <filter token="VERSION" value="${version}"/>
+        <copy todir="${slide.dist}/etc" filtering="true">
+            <fileset dir="./etc" includes="*.MF"/>
+        </copy>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Prepare commandline dist                                            -->
+    <!-- =================================================================== -->
+    <target name="prepare-dist-cmd" depends="prepare-dist">
+        <mkdir dir="${cmd.dist}"/>
+        <mkdir dir="${cmd.dist}/lib"/>
+        <mkdir dir="${cmd.dist}/bin"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build All : Main, Doc and JavaDoc                                   -->
+    <!-- =================================================================== -->
+    <target name="all" depends="clean,dist-clientlib,dist-cmd" 
+	    description="Delete previous build and make distribution"/>
+    <!-- =================================================================== -->
+    <!-- Clean build and distribution directories of the DAV client          -->
+    <!-- =================================================================== -->
+    <target name="clean">
+        <delete dir="${slide.build}"/>
+        <delete dir="${slide.dist}"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build Slide WebDAV client lib                                       -->
+    <!-- =================================================================== -->
+    <target name="build-clientlib" depends="prepare-build" description="Build the WebDAV client lib">
+        <echo message="Building Slide WebDAV client lib"/>
+        <javac srcdir="clientlib/src/java" destdir="${clientlib.build}/classes" 
+	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+	       optimize="${compile.optimize}" excludes="**/CVS/**">
+            <classpath refid="clientlib.classpath"/>
+        </javac>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build Slide commandline client                                      -->
+    <!-- =================================================================== -->
+    <target name="build-cmd" depends="prepare-build-cmd,build-clientlib" 
+	    description="Build the commandline client">
+        <echo message="Building Slide commandline client"/>
+        <mkdir dir="${cmd.build}/src"/>
+        <filter token="VERSION" value="${version}"/>
+        <copy todir="${cmd.build}/src" filtering="true">
+            <fileset dir="commandline/src/java" includes="**/Slide.java"/>
+        </copy>
+        <javac srcdir="commandline/src/java" destdir="${cmd.build}/classes" 
+	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+	       optimize="${compile.optimize}" excludes="**/Slide.java">
+            <classpath refid="cmd.classpath"/>
+        </javac>
+        <javac srcdir="${cmd.build}/src" destdir="${cmd.build}/classes" 
+	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+	       optimize="${compile.optimize}" includes="**/Slide.java">
+            <classpath refid="cmd.classpath"/>
+        </javac>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Javadoc of the WebDAV client                                        -->
+    <!-- =================================================================== -->
+    <target name="javadoc-clientlib" depends="prepare-build" description="Create WebDAV client javadocs">
+        <property name="copyright" value=""/>
+        <javadoc sourcepath="clientlib/src/java" destdir="${clientlib.build}/${clientlib.javadoc.path}" 
+		 doctitle="Slide ${version} WebDAV Client JavaDoc" windowtitle="Slide WebDAV Client Javadoc" 
+		 package="true" noindex="false" author="true" version="true" packagenames="org.apache.webdav.lib.*">
+            <classpath refid="clientlib.classpath"/>
+            <link href="http://jakarta.apache.org/commons/httpclient/apidocs/"/>
+        </javadoc>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build a WebDAV client distribution                                     -->
+    <!-- =================================================================== -->
+    <target name="dist-clientlib" depends="build-clientlib,prepare-dist,javadoc-clientlib"
+	    description="Jar WebDAV client lib and copy required jar libs">
+        <copy todir="${clientlib.dist}/lib">
+            <fileset dir="lib">
+                <include name="commons-*.jar"/>
+            </fileset>
+        </copy>
+        <jar jarfile="${clientlib.dist}/lib/${clientlib.final.name}.jar"
+             basedir="${clientlib.build}/classes"
+             manifest="${slide.dist}/etc/MANIFEST.MF">
+             <metainf file="./LICENSE"/>
+       </jar>
+        <copy todir="${cmd.dist}">
+            <fileset dir=".">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="NOTICE"/>
+            </fileset>
+        </copy>
+        <copy todir="${clientlib.dist}/${clientlib.javadoc.path}">
+            <fileset dir="${clientlib.build}/${clientlib.javadoc.path}"/>
+        </copy>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build a commandline client distribution                             -->
+    <!-- =================================================================== -->
+    <target name="dist-cmd" depends="build-cmd,dist-clientlib,prepare-dist-cmd"
+	    description="Distribute commandline client">
+        <jar jarfile="${cmd.dist}/lib/${cmd.final.name}.jar"
+             basedir="${cmd.build}/classes"
+             manifest="${slide.dist}/etc/MANIFEST.MF">
+             <metainf file="./LICENSE"/>
+        </jar>
+        <copy todir="${cmd.dist}">
+            <fileset dir=".">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="NOTICE"/>
+            </fileset>
+        </copy>
+        <copy todir="${cmd.dist}/lib">
+            <fileset dir="lib">
+                <include name="commons-*.jar"/>
+                <include name="antlr*.*"/>
+            </fileset>
+        </copy>
+        <copy todir="${cmd.dist}/bin">
+            <fileset dir="commandline/src/bin">
+                <include name="**/*.bat"/>
+                <include name="**/*.sh"/>
+            </fileset>
+        </copy>
+        <chmod dir="${cmd.dist}/bin" perm="+x" includes="**/*.sh"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Copy all files for the src archive                                  -->
+    <!-- =================================================================== -->
+    <target name="package-src-prepare" depends="dist-cmd">
+        <mkdir dir="${slide.dist}/${archive.src.name}"/>
+        <copy todir="${slide.dist}/${archive.src.name}">
+            <fileset dir=".">
+                <include name="clientlib/**"/>
+                <include name="commandline/**"/>
+                <include name="etc/**"/>
+                <include name="lib/**"/>
+                <include name="LICENSE"/>
+                <include name="NOTICE"/>
+                <include name="README"/>
+                <include name="build.xml"/>
+            </fileset>
+        </copy>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages the source code with ZIP                                   -->
+    <!-- =================================================================== -->
+    <target name="package-src-zip" depends="package-src-prepare">
+        <zip zipfile="${slide.dist}/${archive.src.name}.zip">
+	<zipfileset dir="${slide.dist}/${archive.src.name}" 
+		    prefix="${archive.src.name}" includes="**"/>
+        </zip>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages the source code with TAR-GZIP                              -->
+    <!-- =================================================================== -->
+    <target name="package-src-tgz" depends="package-src-prepare">
+    	<tar tarfile="${slide.dist}/${archive.src.name}.tar" longfile="gnu">
+            <tarfileset dir="${slide.dist}">
+                <include name="${archive.src.name}/**"/>
+            </tarfileset>
+        </tar>
+	<gzip zipfile="${slide.dist}/${archive.src.name}.tar.gz" 
+	      src="${slide.dist}/${archive.src.name}.tar"/>
+        <delete file="${slide.dist}/${archive.src.name}.tar"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages the source code with ZIP and TAR-GZIP                      -->
+    <!-- =================================================================== -->
+    <target name="package-src-all" depends="package-src-zip, package-src-tgz"
+	    description="Package src distribution as ZIP and TAR-GZIP">
+        <delete dir="${slide.dist}/${archive.src.name}"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Copy all files for the bin archive                                  -->
+    <!-- =================================================================== -->
+    <target name="package-bin-prepare" depends="dist-cmd">
+        <mkdir dir="${slide.dist}/${archive.bin.name}"/>
+        <copy todir="${slide.dist}/${archive.bin.name}">
+            <fileset dir="${slide.dist}">
+                <include name="bin/**"/>
+                <include name="doc/**"/>
+                <include name="etc/**"/>
+                <include name="lib/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${slide.dist}/${archive.bin.name}">
+            <fileset dir=".">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="NOTICE"/>
+            </fileset>
+        </copy>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages ZIP                                                        -->
+    <!-- =================================================================== -->
+    <target name="package-bin-zip" depends="package-bin-prepare">
+        <zip zipfile="${slide.dist}/${archive.bin.name}.zip">
+	<zipfileset dir="${slide.dist}/${archive.bin.name}" 
+		    prefix="${archive.bin.name}" includes="**"/>
+        </zip>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages TAR-GZIP                                                   -->
+    <!-- =================================================================== -->
+    <target name="package-bin-tgz" depends="package-bin-prepare">
+    	<tar tarfile="${slide.dist}/${archive.bin.name}.tar" longfile="gnu">
+            <tarfileset dir="${slide.dist}">
+                <include name="${archive.bin.name}/**"/>
+            </tarfileset>
+        </tar>
+	<gzip zipfile="${slide.dist}/${archive.bin.name}.tar.gz" 
+	      src="${slide.dist}/${archive.bin.name}.tar"/>
+        <delete file="${slide.dist}/${archive.bin.name}.tar"/>
+    </target>
+    <!-- =================================================================== -->
+    <!-- Packages with ZIP and TAR-GZIP                                      -->
+    <!-- =================================================================== -->
+    <target name="package-bin-all" depends="package-bin-zip, package-bin-tgz"
+	    description="Package binary distribution as ZIP and TAR-GZIP">
+        <delete dir="${slide.dist}/${archive.bin.name}"/>
+    </target>
+</project>
+
