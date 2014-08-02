@@ -5,7 +5,7 @@
  *
  * ====================================================================
  *
- * Copyright 1999-2002 The Apache Software Foundation 
+ * Copyright 1999-2002 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,19 @@
 package org.apache.webdav.lib;
 
 import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnection;
+import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.SimpleHttpConnectionManager;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.params.HostParams;
 
 /**
  * This WebdavSession class is for the session management of WebDAV clients.
@@ -146,6 +153,11 @@ public abstract class WebdavSession {
             // Set a state which allows lock tracking
             client.setState(new WebdavState());
             HostConfiguration hostConfig = client.getHostConfiguration();
+
+            final HostParams params = new HostParams();
+            params.setParameter(HostParams.DEFAULT_HEADERS, Arrays.asList(new Header("Connection", "close")));
+            hostConfig.setParams(params);
+
             hostConfig.setHost(httpURL);
             if (proxyHost != null && proxyPort > 0)
                 hostConfig.setProxy(proxyHost, proxyPort);
@@ -209,8 +221,19 @@ public abstract class WebdavSession {
     public void closeSession()
         throws IOException {
         if (client != null) {
-            client.getHttpConnectionManager().getConnection(
-                client.getHostConfiguration()).close();
+            final HttpConnectionManager httpConnectionManager = client.getHttpConnectionManager();
+            if (httpConnectionManager instanceof SimpleHttpConnectionManager)
+            {
+                ((SimpleHttpConnectionManager) httpConnectionManager).shutdown();
+            }
+            else
+            {
+                final HttpConnection connection = httpConnectionManager.getConnection(client.getHostConfiguration());
+                connection.releaseConnection();
+//                httpConnectionManager.closeIdleConnections(0);
+//              connection.close();
+            }
+
             client = null;
         }
     }
