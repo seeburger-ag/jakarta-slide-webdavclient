@@ -224,14 +224,14 @@ public abstract class WebdavSession {
             final HttpConnectionManager httpConnectionManager = client.getHttpConnectionManager();
             if (httpConnectionManager instanceof SimpleHttpConnectionManager)
             {
+                // #closeIdleConnections may not close it inside SimpleHttpConnectionManager
                 ((SimpleHttpConnectionManager) httpConnectionManager).shutdown();
             }
             else
             {
-                final HttpConnection connection = httpConnectionManager.getConnection(client.getHostConfiguration());
-                connection.releaseConnection();
-//                httpConnectionManager.closeIdleConnections(0);
-//              connection.close();
+//                final HttpConnection connection = httpConnectionManager.getConnection(client.getHostConfiguration());
+//                connection.releaseConnection();
+                httpConnectionManager.closeIdleConnections(0);
             }
 
             client = null;
