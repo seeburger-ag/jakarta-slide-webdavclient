@@ -14,7 +14,7 @@
     <!-- =================================================================== -->
     <property name="name" value="Jakarta-Slide"/>
     <property name="year" value="2004"/>
-    <property name="version" value="2.0"/>
+    <property name="version" value="2.0.SEE1"/>
     <property name="project" value="jakarta-slide"/>
     <property name="clientlib.final.name" value="${project}-webdavlib-${version}"/>
     <property name="cmd.final.name" value="${project}-commandline-${version}"/>
@@ -87,7 +87,7 @@
     <!-- =================================================================== -->
     <!-- Build All : Main, Doc and JavaDoc                                   -->
     <!-- =================================================================== -->
-    <target name="all" depends="clean,dist-clientlib,dist-cmd" 
+    <target name="all" depends="clean,dist-clientlib,dist-cmd"
 	    description="Delete previous build and make distribution"/>
     <!-- =================================================================== -->
     <!-- Clean build and distribution directories of the DAV client          -->
@@ -101,8 +101,8 @@
     <!-- =================================================================== -->
     <target name="build-clientlib" depends="prepare-build" description="Build the WebDAV client lib">
         <echo message="Building Slide WebDAV client lib"/>
-        <javac srcdir="clientlib/src/java" destdir="${clientlib.build}/classes" 
-	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+        <javac srcdir="clientlib/src/java" destdir="${clientlib.build}/classes"
+	       debug="${compile.debug}" deprecation="${compile.deprecation}"
 	       optimize="${compile.optimize}" excludes="**/CVS/**">
             <classpath refid="clientlib.classpath"/>
         </javac>
@@ -110,7 +110,7 @@
     <!-- =================================================================== -->
     <!-- Build Slide commandline client                                      -->
     <!-- =================================================================== -->
-    <target name="build-cmd" depends="prepare-build-cmd,build-clientlib" 
+    <target name="build-cmd" depends="prepare-build-cmd,build-clientlib"
 	    description="Build the commandline client">
         <echo message="Building Slide commandline client"/>
         <mkdir dir="${cmd.build}/src"/>
@@ -118,13 +118,13 @@
         <copy todir="${cmd.build}/src" filtering="true">
             <fileset dir="commandline/src/java" includes="**/Slide.java"/>
         </copy>
-        <javac srcdir="commandline/src/java" destdir="${cmd.build}/classes" 
-	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+        <javac srcdir="commandline/src/java" destdir="${cmd.build}/classes"
+	       debug="${compile.debug}" deprecation="${compile.deprecation}"
 	       optimize="${compile.optimize}" excludes="**/Slide.java">
             <classpath refid="cmd.classpath"/>
         </javac>
-        <javac srcdir="${cmd.build}/src" destdir="${cmd.build}/classes" 
-	       debug="${compile.debug}" deprecation="${compile.deprecation}" 
+        <javac srcdir="${cmd.build}/src" destdir="${cmd.build}/classes"
+	       debug="${compile.debug}" deprecation="${compile.deprecation}"
 	       optimize="${compile.optimize}" includes="**/Slide.java">
             <classpath refid="cmd.classpath"/>
         </javac>
@@ -134,8 +134,8 @@
     <!-- =================================================================== -->
     <target name="javadoc-clientlib" depends="prepare-build" description="Create WebDAV client javadocs">
         <property name="copyright" value=""/>
-        <javadoc sourcepath="clientlib/src/java" destdir="${clientlib.build}/${clientlib.javadoc.path}" 
-		 doctitle="Slide ${version} WebDAV Client JavaDoc" windowtitle="Slide WebDAV Client Javadoc" 
+        <javadoc sourcepath="clientlib/src/java" destdir="${clientlib.build}/${clientlib.javadoc.path}"
+		 doctitle="Slide ${version} WebDAV Client JavaDoc" windowtitle="Slide WebDAV Client Javadoc"
 		 package="true" noindex="false" author="true" version="true" packagenames="org.apache.webdav.lib.*">
             <classpath refid="clientlib.classpath"/>
             <link href="http://jakarta.apache.org/commons/httpclient/apidocs/"/>
@@ -221,7 +221,7 @@
     <!-- =================================================================== -->
     <target name="package-src-zip" depends="package-src-prepare">
         <zip zipfile="${slide.dist}/${archive.src.name}.zip">
-	<zipfileset dir="${slide.dist}/${archive.src.name}" 
+	<zipfileset dir="${slide.dist}/${archive.src.name}"
 		    prefix="${archive.src.name}" includes="**"/>
         </zip>
     </target>
@@ -234,7 +234,7 @@
                 <include name="${archive.src.name}/**"/>
             </tarfileset>
         </tar>
-	<gzip zipfile="${slide.dist}/${archive.src.name}.tar.gz" 
+	<gzip zipfile="${slide.dist}/${archive.src.name}.tar.gz"
 	      src="${slide.dist}/${archive.src.name}.tar"/>
         <delete file="${slide.dist}/${archive.src.name}.tar"/>
     </target>
@@ -271,7 +271,7 @@
     <!-- =================================================================== -->
     <target name="package-bin-zip" depends="package-bin-prepare">
         <zip zipfile="${slide.dist}/${archive.bin.name}.zip">
-	<zipfileset dir="${slide.dist}/${archive.bin.name}" 
+	<zipfileset dir="${slide.dist}/${archive.bin.name}"
 		    prefix="${archive.bin.name}" includes="**"/>
         </zip>
     </target>
@@ -284,7 +284,7 @@
                 <include name="${archive.bin.name}/**"/>
             </tarfileset>
         </tar>
-	<gzip zipfile="${slide.dist}/${archive.bin.name}.tar.gz" 
+	<gzip zipfile="${slide.dist}/${archive.bin.name}.tar.gz"
 	      src="${slide.dist}/${archive.bin.name}.tar"/>
         <delete file="${slide.dist}/${archive.bin.name}.tar"/>
     </target>
