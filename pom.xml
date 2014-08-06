@@ -6,7 +6,7 @@
     <groupId>com.seeburger.as</groupId>
     <artifactId>slide-webdavclient</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0.SEE1</version><!-- Also update in MANIFEST.MF! -->
+    <version>2.0.0.SEE2-SNAPSHOT</version><!-- Also update in MANIFEST.MF! -->
 
     <name>jakarta-slide-webdavclient</name>
 
@@ -14,7 +14,7 @@
         <connection>scm:git:git@github.com:seeburger-ag/jakarta-slide-webdavclient.git</connection>
         <developerConnection>scm:git:git@github.com:seeburger-ag/jakarta-slide-webdavclient.git</developerConnection>
         <url>https://github.com/seeburger-ag/jakarta-slide-webdavclient</url>
-      <tag>slide-webdavclient-2.0.0.SEE1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <build>
