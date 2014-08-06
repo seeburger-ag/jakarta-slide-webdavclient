@@ -14,7 +14,7 @@
     <!-- =================================================================== -->
     <property name="name" value="Jakarta-Slide"/>
     <property name="year" value="2004"/>
-    <property name="version" value="2.0.SEE1"/>
+    <property name="version" value="2.0.0.SEE1"/>
     <property name="project" value="jakarta-slide"/>
     <property name="clientlib.final.name" value="${project}-webdavlib-${version}"/>
     <property name="cmd.final.name" value="${project}-commandline-${version}"/>
