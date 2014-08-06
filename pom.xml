@@ -20,6 +20,15 @@
     <build>
         <sourceDirectory>clientlib/src/java</sourceDirectory>
         <finalName>${groupId}.${artifactId}</finalName>
+        <resources>
+            <resource>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>LICENSE</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>
