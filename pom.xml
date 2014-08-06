@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.seeburger.as</groupId>
-    <artifactId>slide-webdavclient</artifactId>
+    <artifactId>webdavlib</artifactId>
     <packaging>jar</packaging>
     <version>2.0.0.SEE2-SNAPSHOT</version><!-- Also update in MANIFEST.MF! -->
 
